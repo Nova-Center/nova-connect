@@ -1,21 +1,19 @@
-"use client";
+"use client"
 
 import {
   Bell,
   Calendar,
-  CreditCard,
   Home,
   LogOut,
   Search,
   Settings,
   User,
   Users,
-} from "lucide-react";
-import { usePathname } from "next/navigation";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+} from "lucide-react"
+import { usePathname } from "next/navigation"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   Sidebar,
   SidebarContent,
@@ -29,8 +27,8 @@ import {
   SidebarMenuItem,
   SidebarRail,
   SidebarSeparator,
-} from "@/components/ui/sidebar";
-import { ThemeToggle } from "@/components/theme-toggle";
+} from "@/components/ui/sidebar"
+import { ThemeToggle } from "@/components/dashboard/theme-toggle"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,8 +37,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import Image from "next/image";
+} from "@/components/ui/dropdown-menu"
+import Image from "next/image"
+import { signOut, useSession } from "next-auth/react"
 
 const navigationItems = [
   { icon: Home, label: "Accueil", href: "/" },
@@ -51,6 +50,9 @@ const navigationItems = [
 
 export function MainSidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession()
+  const user = session?.user
+
 
   return (
     <Sidebar>
@@ -131,8 +133,13 @@ export function MainSidebar() {
               <AvatarFallback>ME</AvatarFallback>
             </Avatar>
             <div>
-              <div className="font-medium">Mon Profil</div>
-              <div className="text-xs text-muted-foreground">@monprofil</div>
+              <div className="font-medium">
+                {user?.email ?? "Mon Profil"}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                ID: {user?.id ?? "inconnu"}
+              </div>
+
             </div>
           </div>
           <div className="flex gap-1">
@@ -157,7 +164,7 @@ export function MainSidebar() {
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={()=> signOut({callbackUrl: "/"})}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Déconnexion</span>
                 </DropdownMenuItem>

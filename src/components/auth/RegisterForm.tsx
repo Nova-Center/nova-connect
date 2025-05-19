@@ -15,6 +15,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns"
 import axios from "axios"
 import Image from "next/image";
+import { logger } from "@/lib/logger"
+import { useRouter } from "next/navigation"
 
 const formSchema = z.object({
   username: z.string().min(3, {
@@ -67,17 +69,32 @@ export function RegisterForm() {
     },
   })
 
+  const router = useRouter()
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
+
     try {
-      await axios.post("http://localhost:8000/api/auth/register", {
+      logger.info("Submitting register form", values)
+
+      const response = await axios.post("http://localhost:3333/api/v1/auth/register", {
         ...values,
         birth_date: values.birth_date.toISOString().split("T")[0], // format YYYY-MM-DD
       })
-      setIsSuccess(true)
+
+      logger.info("Register success:", response.data)
+      router.push("/auth/login")
     } catch (error) {
-      console.error("Erreur d'inscription :", error)
-      form.setError("email", { message: "Adresse email déjà utilisée" })
+      if (axios.isAxiosError(error)) {
+        logger.error("Axios error:", error.message)
+        logger.error("Details:", error.response?.data)
+      } else {
+        logger.error("Unknown error:", error)
+      }
+
+      form.setError("email", {
+        message: "Erreur lors de l'inscription. Vérifie tes infos.",
+      })
     } finally {
       setIsSubmitting(false)
     }

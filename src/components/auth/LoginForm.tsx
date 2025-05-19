@@ -6,13 +6,13 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Eye, EyeOff } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
-import router from "next/router"
-import axios from "axios"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
+
 
 const formSchema = z.object({
   email: z.string().email({
@@ -34,20 +34,27 @@ export function LoginForm() {
       password: "",
     },
   })
+  const router = useRouter()
 
-async function onSubmit(values: z.infer<typeof formSchema>) {
-  setIsSubmitting(true)
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true)
 
-  try {
-    await axios.post("http://localhost:8000/api/auth/login", values)
-    router.push("/dashboard") // ou une autre route protégée
-  } catch (error) {
-    console.error("Login failed", error)
-    form.setError("email", { message: "Email or password incorrect" })
-  } finally {
+    const res = await signIn("credentials", {
+      redirect: false,
+      email: values.email,
+      password: values.password,
+    })
+
+    if (res?.ok) {
+      router.push("/dashboard")
+    } else {
+      form.setError("email", {
+        message: "Email ou mot de passe incorrect",
+      })
+    }
+
     setIsSubmitting(false)
   }
-}
 
   return (
     <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden">

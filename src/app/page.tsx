@@ -1,14 +1,17 @@
-import { Feed } from "@/components/feed"
-import { MainSidebar } from "@/components/main-sidebar"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-
 export default function Home() {
   return (
-    <SidebarProvider>
-      <MainSidebar />
-      <SidebarInset className="bg-zinc-50 dark:bg-zinc-950">
-        <Feed />
-      </SidebarInset>
-    </SidebarProvider>
+    <main className="flex min-h-screen items-center justify-center">
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-bold">Bienvenue sur Nova Connect</h1>
+        <p className="text-gray-500 text-lg">Connecte-toi pour continuer</p>
+
+        <a
+          href="/auth/login"
+          className="text-teal-600 underline hover:text-teal-800"
+        >
+          Aller au login
+        </a>
+      </div>
+    </main>
   )
 }
