@@ -1,36 +1,136 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nova Connect
 
-## Getting Started
+A modern web application built with Next.js 15, featuring a beautiful UI and robust authentication system.
 
-First, run the development server:
+## 🚀 Features
+
+- ⚡️ Next.js 15 with App Router
+- 🔐 NextAuth.js for authentication
+- 🎨 Tailwind CSS for styling
+- 📱 Responsive design
+- 🌙 Dark mode support
+- 🎯 TypeScript for type safety
+- 📝 Form handling with React Hook Form
+- ✅ Form validation with Zod
+- 🎭 Radix UI components
+- 📅 Date handling with date-fns
+- 🔄 Real-time updates
+- 🎨 Beautiful UI components with shadcn/ui
+
+## 📋 Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- Node.js (v18 or higher)
+- pnpm (recommended) or npm
+
+## 🛠️ Installation
+
+1. Clone the repository:
 
 ```bash
-npm run dev
+git clone https://github.com/yourusername/nova-connect.git
+cd nova-connect
+```
+
+2. Install dependencies:
+
+```bash
+pnpm install
 # or
-yarn dev
-# or
+npm install
+```
+
+3. Create a `.env.local` file in the root directory and add your environment variables:
+
+```env
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-key
+# Add other required environment variables
+```
+
+## 🚀 Development
+
+To start the development server:
+
+```bash
 pnpm dev
 # or
-bun dev
+npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🏗️ Building for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+To create a production build:
 
-## Learn More
+```bash
+pnpm build
+# or
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+To start the production server:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm start
+# or
+npm start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🧪 Testing
 
-## Deploy on Vercel
+Run the linter:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm lint
+# or
+npm run lint
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📁 Project Structure
+
+```
+nova-connect/
+├── src/
+│   ├── app/          # App router pages and layouts
+│   ├── components/   # React components
+│   ├── lib/          # Utility functions and configurations
+│   └── styles/       # Global styles
+├── public/           # Static assets
+└── ...config files
+```
+
+## 🛠️ Tech Stack
+
+- **Framework:** Next.js 15
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **UI Components:** Radix UI
+- **Authentication:** NextAuth.js
+- **Form Handling:** React Hook Form + Zod
+- **Date Handling:** date-fns
+- **Icons:** Lucide React
+- **Animation:** Motion
+
+## 📚 Documentation
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [NextAuth.js Documentation](https://next-auth.js.org/getting-started/introduction)
+- [Radix UI Documentation](https://www.radix-ui.com/docs/primitives/overview/introduction)
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- [Vercel](https://vercel.com) for the amazing Next.js framework
+- [shadcn/ui](https://ui.shadcn.com) for the beautiful UI components
+- All the open-source contributors who made this possible
