@@ -78,9 +78,14 @@ export function RegisterForm() {
       logger.info("Submitting register form", values)
 
       const response = await axios.post("http://localhost:3333/api/v1/auth/register", {
-        ...values,
-        birth_date: values.birth_date.toISOString().split("T")[0], // format YYYY-MM-DD
+        username: values.username,
+        firstName: values.first_name,
+        lastName: values.last_name,
+        birthDate: values.birth_date.toISOString().split("T")[0],
+        email: values.email,
+        password: values.password,
       })
+
 
       logger.info("Register success:", response.data)
       router.push("/auth/login")
