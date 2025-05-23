@@ -1,18 +1,15 @@
-
+// src/app/page.tsx
 import { getServerSession } from "next-auth"
 import { authOptions } from "../api/auth/[...nextauth]/route"
 import { redirect } from "next/navigation"
 
-import { Feed } from "@/components/dashboard/feed"
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { MainSidebar } from "@/components/dashboard/main-sidebar"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { Feed } from "@/components/dashboard/feed"
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
-
-  if (!session) {
-    redirect("/auth/login") 
-  }
+  if (!session) redirect("/auth/login")
 
   return (
     <SidebarProvider>
