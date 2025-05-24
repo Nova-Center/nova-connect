@@ -1,6 +1,7 @@
 // src/components/dashboard/feed.tsx
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import { usePosts } from "@/hooks/usePosts"
 import { Post } from "@/types/post"
@@ -14,9 +15,11 @@ import {
   Share,
   MoreHorizontal,
 } from "lucide-react"
+import CommentDialog from "@/components/posts/CommentDialog"
 
 export function Feed() {
   const { posts, isLoading, error } = usePosts()
+  const [selectedPostId, setSelectedPostId] = useState<number | null>(null)
 
   if (isLoading) {
     return <p className="p-6 text-center">Chargement…</p>
@@ -61,7 +64,6 @@ export function Feed() {
                       {new Date(post.createdAt).toLocaleString()}
                     </div>
                   </div>
-
                 </div>
                 <button className="rounded-full p-1 hover:bg-muted/50">
                   <MoreHorizontal className="h-5 w-5" />
@@ -91,12 +93,18 @@ export function Feed() {
                 <button className="flex items-center gap-2 text-sm hover:bg-muted/50 rounded px-2 py-1">
                   <Heart className="h-4 w-4" /> {post.likes}
                 </button>
-                <button className="flex items-center gap-2 text-sm hover:bg-muted/50 rounded px-2 py-1">
+
+                <button
+                  className="flex items-center gap-2 text-sm hover:bg-muted/50 rounded px-2 py-1"
+                  onClick={() => setSelectedPostId(post.id)}
+                >
                   <MessageCircle className="h-4 w-4" /> {post.comments.length}
                 </button>
+
                 <button className="flex items-center gap-2 text-sm hover:bg-muted/50 rounded px-2 py-1">
                   <Repeat className="h-4 w-4" /> 0
                 </button>
+
                 <button className="hover:bg-muted/50 rounded p-1">
                   <Share className="h-4 w-4" />
                 </button>
@@ -105,6 +113,15 @@ export function Feed() {
           </Card>
         ))}
       </div>
+
+      {/* Dialogue des commentaires */}
+      {selectedPostId && (
+        <CommentDialog
+          postId={selectedPostId}
+          open={!!selectedPostId}
+          onClose={() => setSelectedPostId(null)}
+        />
+      )}
     </div>
   )
 }

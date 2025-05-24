@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { ThemeToggle } from "@/components/dashboard/theme-toggle"
-import { CreatePostButton } from "@/components/dashboard/create-post-button"
+import { CreatePostButton } from "@/components/posts/create-post-button"
 
 const navigationItems = [
   { icon: Home, label: "Accueil", href: "/" },
