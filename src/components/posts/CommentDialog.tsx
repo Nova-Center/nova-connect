@@ -75,10 +75,14 @@ export default function CommentDialog({ postId, open, onClose }: Props) {
           {comments.map(comment => (
             <div key={comment.id} className="flex items-start gap-3">
               <img
-                src={comment.user.avatar || "/placeholder.svg?text=U"}
-                alt={comment.user.username}
+                src={
+                  comment.user?.avatar ??
+                  `/placeholder-post.svg?height=32&width=32&text=${comment.user?.username?.[0] ?? "U"}`
+                }
+                alt={"Avatar"}
                 className="w-8 h-8 rounded-full object-cover"
               />
+
               <div>
                 <div className="font-medium">{comment.user.username}</div>
                 <p className="text-sm">{comment.content}</p>

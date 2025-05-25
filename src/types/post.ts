@@ -8,6 +8,7 @@ export interface User {
 }
 
 export interface Comment {
+  user: any
   id: number
   content: string
   userId: number

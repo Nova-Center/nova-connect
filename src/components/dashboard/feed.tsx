@@ -46,7 +46,7 @@ export function Feed() {
                 <div className="flex items-center gap-3">
                   <Avatar>
                     <AvatarImage
-                      src={post.user?.avatar || "/placeholder.svg"}
+                      src={post.user?.avatar || "/placeholder-post.svg"}
                       alt={post.user?.name || "Avatar"}
                     />
                     <AvatarFallback>
