@@ -58,7 +58,7 @@ export function Feed() {
                   </Avatar>
 
                   <div>
-                    <div className="font-semibold">{post.user?.name || "Utilisateur inconnu"}</div>
+                    <div className="font-semibold">{post.user?.firstName + " "+post.user?.lastName || "Utilisateur inconnu"}</div>
                     <div className="text-xs text-muted-foreground">
                       @{post.user?.username || "anonyme"} ·{" "}
                       {new Date(post.createdAt).toLocaleString()}
