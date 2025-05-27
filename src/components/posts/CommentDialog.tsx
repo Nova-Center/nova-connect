@@ -84,7 +84,7 @@ export default function CommentDialog({ postId, open, onClose }: Props) {
               />
 
               <div>
-                <div className="font-medium">{comment.user.username}</div>
+                <div className="font-medium">{comment.user?.username}</div>
                 <p className="text-sm">{comment.content}</p>
               </div>
             </div>
