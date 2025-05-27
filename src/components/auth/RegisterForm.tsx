@@ -62,7 +62,6 @@ export function RegisterForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
 
-
     try {
       const formData = new FormData()
       formData.append("username", values.username)
@@ -92,27 +91,31 @@ export function RegisterForm() {
       <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 space-y-6 text-center">
         <CheckCircle2 className="h-16 w-16 text-teal-500 mx-auto" />
         <h2 className="text-2xl font-bold">Inscription réussie !</h2>
-        <Button className="w-full" onClick={() => router.push("/auth/login")}>Aller à la connexion</Button>
+        <Button className="w-full" onClick={() => router.push("/auth/login")}>
+          Aller à la connexion
+        </Button>
       </div>
     )
   }
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+    <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden text-black">
       <div className="p-8 space-y-6">
         <div className="text-center space-y-2">
           <Image src="/nova-connect-logo.png" alt="Logo" width={60} height={60} className="h-10 w-10 rounded-xl" />
           <div className="font-semibold text-xl">Nova Connect</div>
           <h1 className="text-2xl font-bold">Créer un compte</h1>
-          <p className="text-gray-500 text-sm">Rejoignez la communauté</p>
+          <p className="text-gray-600 text-sm">Rejoignez la communauté</p>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             <FormField name="username" control={form.control} render={({ field }) => (
               <FormItem>
-                <FormLabel>Nom d'utilisateur</FormLabel>
-                <FormControl><Input placeholder="ex: johndoe" {...field} /></FormControl>
+                <FormLabel className="text-black">Nom d'utilisateur</FormLabel>
+                <FormControl>
+                  <Input placeholder="ex: johndoe" {...field} className="text-black bg-white placeholder:text-gray-500" />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -120,15 +123,19 @@ export function RegisterForm() {
             <div className="grid grid-cols-2 gap-4">
               <FormField name="first_name" control={form.control} render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Prénom</FormLabel>
-                  <FormControl><Input placeholder="Frédéric" {...field} /></FormControl>
+                  <FormLabel className="text-black">Prénom</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Frédéric" {...field} className="text-black bg-white placeholder:text-gray-500" />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField name="last_name" control={form.control} render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nom</FormLabel>
-                  <FormControl><Input placeholder="Sananes" {...field} /></FormControl>
+                  <FormLabel className="text-black">Nom</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Sananes" {...field} className="text-black bg-white placeholder:text-gray-500" />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -136,11 +143,14 @@ export function RegisterForm() {
 
             <FormField name="birth_date" control={form.control} render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Date de naissance</FormLabel>
+                <FormLabel className="text-black">Date de naissance</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
-                      <Button variant="outline" className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : "Choisir une date"}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button>
+                      <Button variant="outline" className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                        {field.value ? format(field.value, "PPP") : "Choisir une date"}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
                     </FormControl>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -148,7 +158,7 @@ export function RegisterForm() {
                       mode="single"
                       selected={field.value}
                       onSelect={field.onChange}
-                      disabled={date => date > new Date() || date < new Date("1900-01-01")}
+                      disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                       initialFocus
                     />
                   </PopoverContent>
@@ -159,30 +169,32 @@ export function RegisterForm() {
 
             <FormField name="email" control={form.control} render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl><Input type="email" placeholder="salah@esgi.com" {...field} /></FormControl>
+                <FormLabel className="text-black">Email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="salah@esgi.com" {...field} className="text-black bg-white placeholder:text-gray-500" />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )} />
 
             <FormField name="password" control={form.control} render={({ field }) => (
               <FormItem>
-                <FormLabel>Mot de passe</FormLabel>
+                <FormLabel className="text-black">Mot de passe</FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} />
+                    <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} className="text-black bg-white" />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      className="absolute right-0 top-0 h-full px-3 py-2"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4 text-gray-500" /> : <Eye className="h-4 w-4 text-gray-500" />}
                     </Button>
                   </div>
                 </FormControl>
-                <FormDescription className="text-xs">
+                <FormDescription className="text-xs text-gray-600">
                   8 caractères minimum, incluant majuscule, minuscule, chiffre et caractère spécial
                 </FormDescription>
                 <FormMessage />
@@ -190,22 +202,23 @@ export function RegisterForm() {
             )} />
 
             <div className="grid gap-1.5">
-              <label htmlFor="avatar" className="text-sm font-medium">Avatar</label>
+              <label htmlFor="avatar" className="text-sm font-medium text-black">Avatar</label>
               <Input
                 id="avatar"
                 type="file"
                 accept="image/png, image/jpeg, image/jpg, image/gif"
                 onChange={(e) => setAvatar(e.target.files?.[0] || null)}
+                className="text-black bg-white"
               />
             </div>
 
-            <Button type="submit" className="w-full bg-gradient-to-r from-rose-500 to-teal-500 hover:from-rose-600 hover:to-teal-600" disabled={isSubmitting}>
+            <Button type="submit" className="w-full bg-gradient-to-r from-rose-500 to-teal-500 hover:from-rose-600 hover:to-teal-600 text-white" disabled={isSubmitting}>
               {isSubmitting ? "Création en cours..." : "Créer un compte"}
             </Button>
           </form>
         </Form>
 
-        <div className="text-center text-sm text-gray-500">
+        <div className="text-center text-sm text-gray-600">
           Vous avez déjà un compte ?{" "}
           <Link href="/auth/login" className="font-medium text-teal-600 hover:text-teal-500">
             Connectez-vous
