@@ -3,21 +3,9 @@
 import { useSession, signOut } from "next-auth/react"
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
-import Image from "next/image"
 import axios from "axios"
-import {
-  Search,
-  Home,
-  Bell,
-  Users,
-  Calendar,
-  Settings,
-  User,
-  LogOut,
-  MessageCircle,
-} from "lucide-react"
+import { Home, Bell, Users, Calendar, Settings, LogOut } from "lucide-react"
 
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
   Sidebar,
@@ -44,19 +32,11 @@ const navigationItems = [
   { icon: Calendar, label: "Événements", href: "/events" },
 ]
 
-interface UserSuggestion {
-  id: number
-  username: string
-  avatar?: string | null
-  isOnline: boolean
-}
-
 export function MainSidebar() {
   const { data: session } = useSession()
   const user = session?.user
   const pathname = usePathname()
   const [points, setPoints] = useState<number | null>(null)
-  const [users, setUsers] = useState<UserSuggestion[]>([])
 
   useEffect(() => {
     if (!user?.accessToken) return
@@ -67,40 +47,31 @@ export function MainSidebar() {
       })
       .then((res) => setPoints(res.data.points ?? null))
       .catch(() => setPoints(null))
-
-    // TODO: remplacer par une vraie requête vers /api/v1/users plus tard
-    setUsers([
-      { id: 1, username: "Utilisateur 1", avatar: null, isOnline: true },
-      { id: 2, username: "Utilisateur 2", avatar: null, isOnline: false },
-      { id: 3, username: "Utilisateur 3", avatar: null, isOnline: true },
-    ])
   }, [user?.accessToken])
 
   return (
-    <Sidebar className="w-60">
+    <Sidebar className="w-72">
       <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
-          <Image
-            src="/images/nova-connect-logo.png"
-            alt="Logo Nova Connect"
-            width={60}
-            height={60}
-            className="h-10 w-10 rounded-xl"
-          />
-          <span className="font-semibold text-xl">Nova Connect</span>
+        {/* Section Profil */}
+        <div className="flex items-center gap-3 mb-4">
+          <Avatar className="h-12 w-12">
+            <AvatarImage src={user?.avatar || "/placeholder-post.svg?height=48&width=48&text=ME"} />
+            <AvatarFallback className="text-lg">{user?.email?.[0]?.toUpperCase() || "ME"}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <div className="font-semibold text-base">{user?.email?.split("@")[0] || "Mon Profil"}</div>
+            <div className="text-sm text-muted-foreground">🎯 {points ?? "-"} NovaPoints</div>
+          </div>
         </div>
 
-        <div className="mt-4 relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Rechercher..." className="pl-9 bg-muted/50 border-none text-foreground" />
-        </div>
-
-        <div className="mt-4">
+        {/* Bouton Nouveau Post */}
+        <div className="mb-4">
           <CreatePostButton />
         </div>
       </SidebarHeader>
 
       <SidebarContent className="space-y-4">
+        {/* Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -121,54 +92,70 @@ export function MainSidebar() {
 
         <SidebarSeparator />
 
+        {/* Section NovaPoints stylée */}
         <SidebarGroup>
-          <SidebarGroupLabel>Suggestions</SidebarGroupLabel>
+          <SidebarGroupLabel>NovaPoints</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {users.map((u) => (
-                <SidebarMenuItem key={u.id}>
-                  <SidebarMenuButton asChild>
-                    <div className="flex items-center justify-between gap-3 w-full">
-                      <div className="flex items-center gap-2">
-                        <div className="relative">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={u.avatar || `/placeholder.svg?text=${u.username[0]}`} />
-                            <AvatarFallback>{u.username[0]}</AvatarFallback>
-                          </Avatar>
-                          <span
-                            className={`absolute bottom-0 right-0 h-2 w-2 rounded-full border border-white ${u.isOnline ? "bg-green-500" : "bg-gray-400"
-                              }`}
-                          />
-                        </div>
-                        <span className="text-sm text-foreground">{u.username}</span>
-                      </div>
-                      <Button variant="ghost" size="icon" className="hover:bg-muted">
-                        <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                      </Button>
-                    </div>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            <div className="space-y-3">
+              {/* Affichage principal des points */}
+              <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg p-4 border border-blue-200/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-2xl font-bold text-foreground">{points ?? "---"}</div>
+                    <div className="text-sm text-muted-foreground">Points totaux</div>
+                  </div>
+                  <div className="text-3xl">🎯</div>
+                </div>
+              </div>
+
+              {/* Statistiques rapides */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-muted/50 rounded-lg p-3 text-center">
+                  <div className="text-lg font-semibold text-green-600">+12</div>
+                  <div className="text-xs text-muted-foreground">Aujourd'hui</div>
+                </div>
+                <div className="bg-muted/50 rounded-lg p-3 text-center">
+                  <div className="text-lg font-semibold text-blue-600">#{Math.floor(Math.random() * 100) + 1}</div>
+                  <div className="text-xs text-muted-foreground">Classement</div>
+                </div>
+              </div>
+
+              {/* Progression vers le prochain niveau */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Niveau actuel</span>
+                  <span className="font-medium">Niveau {Math.floor((points ?? 0) / 100) + 1}</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(points ?? 0) % 100}%` }}
+                  />
+                </div>
+                <div className="text-xs text-muted-foreground text-center">
+                  {100 - ((points ?? 0) % 100)} points pour le niveau suivant
+                </div>
+              </div>
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
+      {/* Footer avec paramètres */}
       <SidebarFooter className="p-4">
-        <div className="flex items-center justify-between gap-4 mt-2">
-          <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarImage src={user?.avatar || "/placeholder-post.svg?height=40&width=40&text=ME"} />
-              <AvatarFallback>ME</AvatarFallback>
-            </Avatar>
-            <div>
-              <div className="font-medium">{user?.email || "Mon Profil"}</div>
-              <div className="text-xs text-muted-foreground">
-                ID: {user?.id || "inconnu"} <br />
-                🎯 {points ?? "-"} pts
-              </div>
-            </div>
-          </div>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <a href="/settings" className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                <span>Paramètres</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+
+        <div className="flex items-center justify-between gap-2 mt-2">
+          <div className="text-xs text-muted-foreground">ID: {user?.id || "inconnu"}</div>
           <div className="flex gap-1">
             <ThemeToggle />
             <Button variant="ghost" size="icon" onClick={() => signOut({ callbackUrl: "/" })}>
