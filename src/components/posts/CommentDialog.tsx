@@ -33,7 +33,7 @@ export default function CommentDialog({ postId, open, onClose }: Props) {
 
     try {
       await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${postId}/comment`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${postId}/comments`,
         { content: newComment },
         { headers: { Authorization: `Bearer ${token}` } }
       )
