@@ -20,7 +20,7 @@ export const authOptions: AuthOptions = {
             return null
           }
 
-          const userResponse = await axios.get("http://localhost:3333/api/v1/users/me", {
+          const userResponse = await axios.get("http://localhost:3333/api/v1/me", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
