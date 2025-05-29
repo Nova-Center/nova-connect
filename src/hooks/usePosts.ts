@@ -13,8 +13,8 @@ export function usePosts() {
 
   const fetcher = (url: string) =>
     axios
-      .get<Post[]>(url, { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => res.data)
+      .get(url, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => res.data.data) 
 
   const shouldFetch = status === "authenticated" && Boolean(token)
   const { data, error, isLoading: swrLoading } = useSWR(

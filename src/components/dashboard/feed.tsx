@@ -49,13 +49,8 @@ export function Feed() {
 
   if (isLoading) return <p className="p-6 text-center">Chargement…</p>
   if (error) return <p className="p-6 text-center text-red-500">Erreur : {error.message}</p>
+  if (!Array.isArray(posts)) return <p className="p-6 text-center text-red-500">Erreur de chargement.</p>
   if (posts.length === 0) return <p className="p-6 text-center">Aucun post pour l’instant.</p>
-
-
-  if (!Array.isArray(posts)) {
-    console.error("Erreur : posts n'est pas un tableau", posts)
-    return <p className="p-6 text-center text-red-500">Erreur lors du chargement des posts.</p>
-  }
 
   return (
     <div className="container mx-auto px-14 py-6">
@@ -84,14 +79,16 @@ export function Feed() {
                   </Avatar>
                   <div>
                     <div className="font-semibold">
-                      {post.user?.firstName + " " + post.user?.lastName || "Utilisateur inconnu"}
+                      {post.user?.firstName && post.user?.lastName
+                        ? `${post.user.firstName} ${post.user.lastName}`
+                        : "Utilisateur inconnu"}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       @{post.user?.username || "anonyme"} · {new Date(post.createdAt).toLocaleString()}
                     </div>
                   </div>
                 </div>
-                {session?.user.id === post.user.id && (
+                {session?.user.id === post.user?.id && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="rounded-full p-1 hover:bg-muted/50">
@@ -112,7 +109,13 @@ export function Feed() {
             </CardHeader>
 
             <CardContent className="p-4 pt-0">
-              <p className="mb-4">{post.content}</p>
+              {typeof post.content === "string" ? (
+                <p className="mb-4">{post.content}</p>
+              ) : (
+                <pre className="text-xs text-muted-foreground bg-muted p-2 rounded mb-4">
+                  {JSON.stringify(post.content, null, 2)}
+                </pre>
+              )}
               {post.image && (
                 <div className="rounded-lg overflow-hidden mb-2">
                   <Image
@@ -131,13 +134,13 @@ export function Feed() {
             <CardFooter className="p-2">
               <div className="flex justify-between w-full">
                 <button className="flex items-center gap-2 text-sm hover:bg-muted/50 rounded px-2 py-1">
-                  <Heart className="h-4 w-4" /> {post.likes}
+                  <Heart className="h-4 w-4" /> {typeof post.likes === "number" ? post.likes : 0}
                 </button>
                 <button
                   className="flex items-center gap-2 text-sm hover:bg-muted/50 rounded px-2 py-1"
                   onClick={() => setSelectedPostId(post.id)}
                 >
-                  <MessageCircle className="h-4 w-4" /> {post.comments.length}
+                  <MessageCircle className="h-4 w-4" /> {post.comments?.length || 0}
                 </button>
                 <button className="flex items-center gap-2 text-sm hover:bg-muted/50 rounded px-2 py-1">
                   <Repeat className="h-4 w-4" /> 0
