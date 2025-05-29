@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react"
 import axios from "axios"
 import { mutate } from "swr"
 
-import { usePosts } from "@/hooks/usePosts"
+import { API_BASE, usePosts } from "@/hooks/usePosts"
 import { Post } from "@/types/post"
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -41,7 +41,7 @@ export function Feed() {
       await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${postId}`, {
         headers: { Authorization: `Bearer ${session.user.accessToken}` },
       })
-      mutate("/api/v1/posts")
+      await mutate(`${API_BASE}/api/v1/posts`)
     } catch (err) {
       console.error("Erreur suppression :", err)
     }

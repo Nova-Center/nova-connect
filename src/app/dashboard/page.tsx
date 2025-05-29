@@ -5,6 +5,7 @@ import { redirect } from "next/navigation"
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { MainSidebar } from "@/components/dashboard/main-sidebar"
+import { RightSidebar } from "@/components/dashboard/rightSidebar"
 import { Feed } from "@/components/dashboard/feed"
 
 export default async function DashboardPage() {
@@ -13,10 +14,13 @@ export default async function DashboardPage() {
 
   return (
     <SidebarProvider>
-      <MainSidebar />
-      <SidebarInset className="bg-zinc-50 dark:bg-zinc-950">
-        <Feed />
-      </SidebarInset>
+      <div className="flex min-h-screen w-full">
+        <MainSidebar />
+        <SidebarInset className="flex-1 bg-zinc-50 dark:bg-zinc-950">
+          <Feed />
+        </SidebarInset>
+        <RightSidebar />
+      </div>
     </SidebarProvider>
   )
 }
