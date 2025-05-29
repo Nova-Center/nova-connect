@@ -1,9 +1,21 @@
 "use client"
 
-import Image from "next/image"
+import { useSession, signOut } from "next-auth/react"
+import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
-import { signOut, useSession } from "next-auth/react"
-import { Search, Home, Bell, Users, Calendar, Settings, User, LogOut } from "lucide-react"
+import Image from "next/image"
+import axios from "axios"
+import {
+  Search,
+  Home,
+  Bell,
+  Users,
+  Calendar,
+  Settings,
+  User,
+  LogOut,
+  MessageCircle,
+} from "lucide-react"
 
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -32,13 +44,40 @@ const navigationItems = [
   { icon: Calendar, label: "Événements", href: "/events" },
 ]
 
+interface UserSuggestion {
+  id: number
+  username: string
+  avatar?: string | null
+  isOnline: boolean
+}
+
 export function MainSidebar() {
   const { data: session } = useSession()
   const user = session?.user
   const pathname = usePathname()
+  const [points, setPoints] = useState<number | null>(null)
+  const [users, setUsers] = useState<UserSuggestion[]>([])
+
+  useEffect(() => {
+    if (!user?.accessToken) return
+
+    axios
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/me/nova-points`, {
+        headers: { Authorization: `Bearer ${user.accessToken}` },
+      })
+      .then((res) => setPoints(res.data.points ?? null))
+      .catch(() => setPoints(null))
+
+    // TODO: remplacer par une vraie requête vers /api/v1/users plus tard
+    setUsers([
+      { id: 1, username: "Utilisateur 1", avatar: null, isOnline: true },
+      { id: 2, username: "Utilisateur 2", avatar: null, isOnline: false },
+      { id: 3, username: "Utilisateur 3", avatar: null, isOnline: true },
+    ])
+  }, [user?.accessToken])
 
   return (
-    <Sidebar>
+    <Sidebar className="w-60">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-2">
           <Image
@@ -57,18 +96,17 @@ export function MainSidebar() {
         </div>
 
         <div className="mt-4">
-          {/* Création de post invalide le cache SWR */}
           <CreatePostButton />
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="space-y-4">
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigationItems.map(item => (
-                <SidebarMenuItem key={item.href}>
+              {navigationItems.map((item) => (
+                <SidebarMenuItem key={item.href} className="py-1">
                   <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.label}>
                     <a href={item.href} className="flex items-center gap-2">
                       <item.icon className="h-5 w-5" />
@@ -86,18 +124,28 @@ export function MainSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Suggestions</SidebarGroupLabel>
           <SidebarGroupContent>
-            {/* À remplacer par tes vraies suggestions */}
             <SidebarMenu>
-              {[1, 2, 3].map(i => (
-                <SidebarMenuItem key={i}>
+              {users.map((u) => (
+                <SidebarMenuItem key={u.id}>
                   <SidebarMenuButton asChild>
-                    <a href="#" className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={`/placeholder.svg?height=32&width=32&text=U${i}`} />
-                        <AvatarFallback>U{i}</AvatarFallback>
-                      </Avatar>
-                      <span>Utilisateur {i}</span>
-                    </a>
+                    <div className="flex items-center justify-between gap-3 w-full">
+                      <div className="flex items-center gap-2">
+                        <div className="relative">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={u.avatar || `/placeholder.svg?text=${u.username[0]}`} />
+                            <AvatarFallback>{u.username[0]}</AvatarFallback>
+                          </Avatar>
+                          <span
+                            className={`absolute bottom-0 right-0 h-2 w-2 rounded-full border border-white ${u.isOnline ? "bg-green-500" : "bg-gray-400"
+                              }`}
+                          />
+                        </div>
+                        <span className="text-sm text-foreground">{u.username}</span>
+                      </div>
+                      <Button variant="ghost" size="icon" className="hover:bg-muted">
+                        <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -107,24 +155,25 @@ export function MainSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4 mt-2">
           <div className="flex items-center gap-3">
             <Avatar>
-              <AvatarImage src="/placeholder.svg?height=40&width=40&text=ME" />
+              <AvatarImage src={user?.avatar || "/placeholder-post.svg?height=40&width=40&text=ME"} />
               <AvatarFallback>ME</AvatarFallback>
             </Avatar>
             <div>
               <div className="font-medium">{user?.email || "Mon Profil"}</div>
-              <div className="text-xs text-muted-foreground">ID: {user?.id || "inconnu"}</div>
+              <div className="text-xs text-muted-foreground">
+                ID: {user?.id || "inconnu"} <br />
+                🎯 {points ?? "-"} pts
+              </div>
             </div>
           </div>
           <div className="flex gap-1">
             <ThemeToggle />
-            <div>
-              <Button variant="ghost" size="icon" onClick={() => signOut({ callbackUrl: "/" })}>
-                <LogOut className="h-5 w-5" />
-              </Button>
-            </div>
+            <Button variant="ghost" size="icon" onClick={() => signOut({ callbackUrl: "/" })}>
+              <LogOut className="h-5 w-5" />
+            </Button>
           </div>
         </div>
       </SidebarFooter>
