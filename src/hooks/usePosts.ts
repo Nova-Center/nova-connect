@@ -29,6 +29,7 @@ export function usePosts() {
   }
 }
 
-export function mutatePosts(newPosts?: Post[]) {
-  return globalMutate(POSTS_URL, newPosts, false)
+export function mutatePosts(newPosts?: Post[], revalidate: boolean = false) {
+  return globalMutate(POSTS_URL, newPosts, revalidate)
 }
+

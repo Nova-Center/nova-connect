@@ -68,7 +68,7 @@ export function CreatePostButton() {
 
       if (status === 200 || status === 201) {
         // Invalide et rafraîchit le cache SWR
-        await mutatePosts()
+       await mutatePosts(undefined, true) // force un re-fetch complet depuis l'API
         clearFile()
         setCaption("")
         setOpen(false)
