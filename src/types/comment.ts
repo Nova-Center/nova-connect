@@ -11,3 +11,9 @@ export interface Comment {
   user: User
   createdAt: string
 }
+
+export interface Props {
+  postId: number
+  open: boolean
+  onClose: () => void
+}

@@ -1,5 +1,5 @@
 "use client"
-
+import { Comment, User, Props } from "@/types/comment"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { useSession } from "next-auth/react"
@@ -7,24 +7,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 
-interface User {
-  id: number
-  username: string
-  avatar?: string | null
-}
-
-interface Comment {
-  id: number
-  content: string
-  user: User
-  createdAt: string
-}
-
-interface Props {
-  postId: number
-  open: boolean
-  onClose: () => void
-}
 
 export default function CommentDialog({ postId, open, onClose }: Props) {
   const { data: session } = useSession()
