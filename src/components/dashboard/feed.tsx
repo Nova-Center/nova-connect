@@ -51,6 +51,12 @@ export function Feed() {
   if (error) return <p className="p-6 text-center text-red-500">Erreur : {error.message}</p>
   if (posts.length === 0) return <p className="p-6 text-center">Aucun post pour l’instant.</p>
 
+
+  if (!Array.isArray(posts)) {
+    console.error("Erreur : posts n'est pas un tableau", posts)
+    return <p className="p-6 text-center text-red-500">Erreur lors du chargement des posts.</p>
+  }
+
   return (
     <div className="container mx-auto px-14 py-6">
       <header className="mb-8">
