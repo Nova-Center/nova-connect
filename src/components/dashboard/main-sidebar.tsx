@@ -50,7 +50,7 @@ export function MainSidebar() {
   }, [user?.accessToken])
 
   return (
-    <Sidebar className="w-72">
+    <Sidebar className="w-80">
       <SidebarHeader className="p-4">
         {/* Section Profil */}
         <div className="flex items-center gap-3 mb-4">

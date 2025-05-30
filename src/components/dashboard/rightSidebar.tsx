@@ -28,9 +28,9 @@ export function RightSidebar() {
   }, [])
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 border-l border-muted p-4 space-y-6">
+   <aside className="fixed right-0 top-0 h-screen w-80 bg-background border-l border-muted px-5 py-6 overflow-y-auto space-y-6">
       {/* Logo + titre */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <Image
           src="/images/nova-connect-logo.png"
           alt="Logo Nova Connect"
