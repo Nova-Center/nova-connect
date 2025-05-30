@@ -115,7 +115,7 @@ export function MainSidebar() {
                   <div className="text-xs text-muted-foreground">Aujourd'hui</div>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3 text-center">
-                  <div className="text-lg font-semibold text-blue-600">#{Math.floor(Math.random() * 100) + 1}</div>
+                  <div className="text-lg font-semibold text-blue-600">#51</div>
                   <div className="text-xs text-muted-foreground">Classement</div>
                 </div>
               </div>
@@ -124,7 +124,7 @@ export function MainSidebar() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Niveau actuel</span>
-                  <span className="font-medium">Niveau {Math.floor((points ?? 0) / 100) + 1}</span>
+                  <span className="font-medium">Niveau 1</span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
                   <div

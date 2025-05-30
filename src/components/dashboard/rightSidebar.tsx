@@ -28,7 +28,7 @@ export function RightSidebar() {
   }, [])
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 border-l border-muted p-4 bg-white space-y-6">
+    <aside className="hidden lg:flex flex-col w-64 border-l border-muted p-4 space-y-6">
       {/* Logo + titre */}
       <div className="flex items-center gap-2">
         <Image
