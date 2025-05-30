@@ -1,12 +1,11 @@
 "use client"
-import { Comment, User, Props } from "@/types/comment"
+import { Comment, Props } from "@/types/comment"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { useSession } from "next-auth/react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-
 
 export default function CommentDialog({ postId, open, onClose }: Props) {
   const { data: session } = useSession()
@@ -30,20 +29,31 @@ export default function CommentDialog({ postId, open, onClose }: Props) {
   const handleComment = async () => {
     if (!newComment.trim() || !token) return
     setLoading(true)
-
     try {
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${postId}/comments`,
         { content: newComment },
         { headers: { Authorization: `Bearer ${token}` } }
       )
-
       setNewComment("")
-      fetchComments() // Refetch complet avec utilisateur
+      fetchComments()
     } catch (err) {
       console.error("Erreur création commentaire", err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDeleteComment = async (commentId: number) => {
+    if (!token) return
+    try {
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${postId}/comments/${commentId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      fetchComments()
+    } catch (err) {
+      console.error("Erreur suppression commentaire", err)
     }
   }
 
@@ -60,21 +70,32 @@ export default function CommentDialog({ postId, open, onClose }: Props) {
 
         <div className="max-h-64 overflow-y-auto space-y-4 mt-2">
           {comments.map((comment) => (
-            <div key={comment.id} className="flex items-start gap-3">
-              <img
-                src={
-                  comment.user?.avatar ??
-                  `/placeholder-post.svg?height=32&width=32&text=${comment.user?.username?.[0] ?? "U"}`
-                }
-                alt="Avatar"
-                className="w-8 h-8 rounded-full object-cover"
-              />
-              <div>
-                <div className="font-medium text-sm text-foreground">
-                  {comment.user.username}
+            <div key={comment.id} className="flex items-start justify-between gap-3">
+              <div className="flex gap-3">
+                <img
+                  src={
+                    comment.user?.avatar ??
+                    `/placeholder-post.svg?height=32&width=32&text=${comment.user?.username?.[0] ?? "U"}`
+                  }
+                  alt="Avatar"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+                <div>
+                  <div className="font-medium text-sm text-foreground">
+                    {comment.user.username}
+                  </div>
+                  <p className="text-sm text-foreground">{comment.content}</p>
                 </div>
-                <p className="text-sm text-foreground">{comment.content}</p>
               </div>
+
+              {session?.user.id === comment.user?.id && (
+                <button
+                  onClick={() => handleDeleteComment(comment.id)}
+                  className="text-xs text-red-500 hover:underline"
+                >
+                  Supprimer
+                </button>
+              )}
             </div>
           ))}
 

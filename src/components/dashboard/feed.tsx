@@ -31,15 +31,36 @@ export function Feed() {
   const { posts, isLoading, error } = usePosts()
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null)
 
+  const token = session?.user.accessToken
+
+  const hasLiked = (post: Post): boolean => {
+    return Array.isArray(post.likes) && post.likes.some((like: any) => like.userId === session?.user.id)
+  }
+
+
+  const handleLike = async (postId: number, alreadyLiked: boolean) => {
+    if (!token) return
+
+    try {
+      const url = `${API_BASE}/api/v1/posts/${postId}/${alreadyLiked ? "unlike" : "like"}`
+      await axios.post(url, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      await mutate(`${API_BASE}/api/v1/posts`)
+    } catch (err) {
+      console.error("Erreur like/unlike :", err)
+    }
+  }
+
   const handleDelete = async (postId: number) => {
-    if (!session?.user.accessToken) return
+    if (!token) return
 
     const confirmDelete = confirm("Supprimer ce post ?")
     if (!confirmDelete) return
 
     try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/posts/${postId}`, {
-        headers: { Authorization: `Bearer ${session.user.accessToken}` },
+      await axios.delete(`${API_BASE}/api/v1/posts/${postId}`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
       await mutate(`${API_BASE}/api/v1/posts`)
     } catch (err) {
@@ -133,8 +154,14 @@ export function Feed() {
 
             <CardFooter className="p-2">
               <div className="flex justify-between w-full">
-                <button className="flex items-center gap-2 text-sm hover:bg-muted/50 rounded px-2 py-1">
-                  <Heart className="h-4 w-4" /> {typeof post.likes === "number" ? post.likes : 0}
+                <button
+                  className="flex items-center gap-2 text-sm hover:bg-muted/50 rounded px-2 py-1"
+                  onClick={() => handleLike(post.id, hasLiked(post))}
+                >
+                  <Heart
+                    className={`h-4 w-4 ${hasLiked(post) ? "fill-red-500 text-red-500" : ""}`}
+                  />
+                  {Array.isArray(post.likes) ? post.likes.length : 0}
                 </button>
                 <button
                   className="flex items-center gap-2 text-sm hover:bg-muted/50 rounded px-2 py-1"
