@@ -74,7 +74,7 @@ export function Feed() {
   if (posts.length === 0) return <p className="p-6 text-center">Aucun post pour l’instant.</p>
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-6">
+    <div className="max-w-3xl mx-auto px-6 py-6 w-350">
       <header className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Fil d'actualité</h1>
         <p className="text-muted-foreground">Découvrez ce que partagent vos amis</p>

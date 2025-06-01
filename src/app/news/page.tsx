@@ -4,7 +4,6 @@ import { redirect } from "next/navigation"
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { MainSidebar } from "@/components/dashboard/main-sidebar"
-import { RightSidebar } from "@/components/dashboard/rightSidebar"
 import { NotificationsList } from "@/components/news/notification-main"
 
 export default async function NotificationsPage() {
