@@ -27,7 +27,7 @@ import { CreatePostButton } from "@/components/posts/create-post-button"
 
 const navigationItems = [
   { icon: Home, label: "Accueil", href: "/" },
-  { icon: Bell, label: "Notifications", href: "/notifications" },
+  { icon: Bell, label: "Notifications", href: "/news" },
   { icon: Users, label: "Amis", href: "/friends" },
   { icon: Calendar, label: "Événements", href: "/events" },
 ]
