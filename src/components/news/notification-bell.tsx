@@ -8,40 +8,46 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Notification } from "@/types/news"
+import { useSession } from "next-auth/react"
+import axios from "axios"
 
 export function NotificationBell() {
+  const { data: session } = useSession()
+  const user = session?.user as any
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
 
   const fetchNotifications = async () => {
+    if (!user?.accessToken) return
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications`)
-      const data = await res.json()
-      if (Array.isArray(data)) {
-        setNotifications(data)
-      } else if (Array.isArray(data.notifications)) {
-        setNotifications(data.notifications)
-      } else {
-        setNotifications([])
-      }
+      const res = await axios.get("/news", {
+        headers: {
+          Authorization: `Bearer ${user.accessToken}`,
+        },
+      })
+      setNotifications(Array.isArray(res.data) ? res.data : res.data.notifications || [])
     } catch (err) {
-      console.error("Erreur de récupération :", err)
+      console.error("Erreur API notifications:", err)
       setNotifications([])
     }
   }
 
   const markAsRead = async (id: string) => {
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ read: true }),
-    })
-    fetchNotifications()
+    try {
+      await axios.patch(`/news/${id}`, { read: true }, {
+        headers: {
+          Authorization: `Bearer ${user.accessToken}`,
+        },
+      })
+      fetchNotifications()
+    } catch (err) {
+      console.error("Erreur mark as read:", err)
+    }
   }
 
   useEffect(() => {
     fetchNotifications()
-  }, [])
+  }, [user?.accessToken])
 
   const unreadCount = notifications.filter((n) => !n.read).length
 
@@ -118,7 +124,7 @@ export function NotificationBell() {
             className="w-full text-sm"
             onClick={() => {
               setIsOpen(false)
-              window.location.href = "/notifications"
+              window.location.href = "/news"
             }}
           >
             Voir toutes les notifications

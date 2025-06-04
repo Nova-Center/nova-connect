@@ -32,7 +32,7 @@ export function NotificationsList() {
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications`)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/news`)
       const data = await res.json()
       console.log(data);
       if (Array.isArray(data)) {
@@ -49,7 +49,7 @@ export function NotificationsList() {
   }
 
   const markAsRead = async (id: string) => {
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications/notifications/${id}`, {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications/news/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ read: true }),
@@ -58,7 +58,7 @@ export function NotificationsList() {
   }
 
   const deleteNotification = async (id: string) => {
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications/notifications/${id}`, {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications/news/${id}`, {
       method: "DELETE",
     })
     fetchNotifications()
