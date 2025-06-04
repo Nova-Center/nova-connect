@@ -18,13 +18,19 @@ export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false)
 
   const fetchNotifications = async () => {
-    if (!user?.accessToken) return
+    console.log("user : " + user )
+    if (!user?.accessToken){
+      console.log("pas de token");
+      return
+    } 
     try {
       const res = await axios.get("/news", {
         headers: {
           Authorization: `Bearer ${user.accessToken}`,
         },
       })
+      console.log(res.data);
+      console.log("test!!!")
       setNotifications(Array.isArray(res.data) ? res.data : res.data.notifications || [])
     } catch (err) {
       console.error("Erreur API notifications:", err)

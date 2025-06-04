@@ -57,7 +57,7 @@ export function RightSidebar() {
             <div className="flex items-center gap-3">
               <div className="relative">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={user.avatar || `/placeholder.svg?text=${user.username[0]}`} />
+                  <AvatarImage src={user.avatar || `/placeholder-post.svg?text=${user.username[0]}`} />
                   <AvatarFallback>{user.username[0]}</AvatarFallback>
                 </Avatar>
                 <span
