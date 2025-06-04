@@ -1,47 +1,44 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Bell, Check, X, Heart, MessageCircle, UserPlus, Calendar, Settings } from "lucide-react"
+import { useSession } from "next-auth/react"
+import {
+  Bell, Check, X, Heart, MessageCircle, UserPlus, Calendar, Settings
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Notification } from "@/types/news"
+import axios from "axios"
 
 const getNotificationIcon = (type: string) => {
   switch (type) {
-    case "like":
-      return <Heart className="h-4 w-4 text-red-500" />
-    case "comment":
-      return <MessageCircle className="h-4 w-4 text-blue-500" />
-    case "friend":
-      return <UserPlus className="h-4 w-4 text-green-500" />
-    case "event":
-      return <Calendar className="h-4 w-4 text-purple-500" />
-    case "system":
-      return <Settings className="h-4 w-4 text-orange-500" />
-    default:
-      return <Bell className="h-4 w-4" />
+    case "like": return <Heart className="h-4 w-4 text-red-500" />
+    case "comment": return <MessageCircle className="h-4 w-4 text-blue-500" />
+    case "friend": return <UserPlus className="h-4 w-4 text-green-500" />
+    case "event": return <Calendar className="h-4 w-4 text-purple-500" />
+    case "system": return <Settings className="h-4 w-4 text-orange-500" />
+    default: return <Bell className="h-4 w-4" />
   }
 }
 
 export function NotificationsList() {
+  const { data: session } = useSession()
+  const user = session?.user as any
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [activeTab, setActiveTab] = useState("all")
 
   const fetchNotifications = async () => {
+    if (!user?.accessToken) return
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/news`)
-      const data = await res.json()
-      console.log(data);
-      if (Array.isArray(data)) {
-        setNotifications(data)
-      } else if (Array.isArray(data.notifications)) {
-        setNotifications(data.notifications)
-      } else {
-        setNotifications([])
-      }
+      const res = await axios.get("/news", {
+        headers: {
+          Authorization: `Bearer ${user.accessToken}`,
+        },
+      })
+      setNotifications(Array.isArray(res.data) ? res.data : res.data.notifications || [])
     } catch (err) {
       console.error("Erreur récupération:", err)
       setNotifications([])
@@ -49,17 +46,15 @@ export function NotificationsList() {
   }
 
   const markAsRead = async (id: string) => {
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications/news/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ read: true }),
+    await axios.patch(`/notifications/news/${id}`, { read: true }, {
+      headers: { Authorization: `Bearer ${user.accessToken}` },
     })
     fetchNotifications()
   }
 
   const deleteNotification = async (id: string) => {
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications/news/${id}`, {
-      method: "DELETE",
+    await axios.delete(`/notifications/news/${id}`, {
+      headers: { Authorization: `Bearer ${user.accessToken}` },
     })
     fetchNotifications()
   }
@@ -71,7 +66,7 @@ export function NotificationsList() {
 
   useEffect(() => {
     fetchNotifications()
-  }, [])
+  }, [user?.accessToken])
 
   const unreadCount = notifications.filter((n) => !n.read).length
   const filteredNotifications = notifications.filter((n) =>
@@ -81,6 +76,7 @@ export function NotificationsList() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6 max-w-4xl">
+        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -105,6 +101,7 @@ export function NotificationsList() {
           )}
         </div>
 
+        {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
           <TabsList className="grid w-full grid-cols-3 max-w-md">
             <TabsTrigger value="all">Toutes ({notifications.length})</TabsTrigger>
@@ -128,8 +125,7 @@ export function NotificationsList() {
                 </Card>
               ) : (
                 filteredNotifications.map((notification) => (
-                  <Card
-                    key={notification.id}
+                  <Card key={notification.id}
                     className={`transition-all duration-200 hover:shadow-md ${
                       !notification.read
                         ? "border-l-4 border-l-blue-500 bg-blue-50/50 dark:bg-blue-950/20"
@@ -141,8 +137,8 @@ export function NotificationsList() {
                         <div className="flex-shrink-0">
                           {notification.avatar ? (
                             <Avatar className="h-10 w-10">
-                              <AvatarImage src={notification.avatar || "/placeholder.svg"} />
-                              <AvatarFallback>{notification.userName?.[0]?.toUpperCase()}</AvatarFallback>
+                              <AvatarImage src={notification.avatar} />
+                              <AvatarFallback>{notification.userName?.[0]}</AvatarFallback>
                             </Avatar>
                           ) : (
                             <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
@@ -150,7 +146,6 @@ export function NotificationsList() {
                             </div>
                           )}
                         </div>
-
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1">
@@ -164,24 +159,13 @@ export function NotificationsList() {
                                 {getNotificationIcon(notification.type)}
                               </div>
                             </div>
-
                             <div className="flex items-center gap-1">
                               {!notification.read && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => markAsRead(notification.id)}
-                                  className="h-8 w-8 p-0"
-                                >
+                                <Button variant="ghost" size="sm" onClick={() => markAsRead(notification.id)} className="h-8 w-8 p-0">
                                   <Check className="h-3 w-3" />
                                 </Button>
                               )}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => deleteNotification(notification.id)}
-                                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                              >
+                              <Button variant="ghost" size="sm" onClick={() => deleteNotification(notification.id)} className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive">
                                 <X className="h-3 w-3" />
                               </Button>
                             </div>
