@@ -1,58 +1,49 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
-
-interface QuickNotification {
-  id: string
-  title: string
-  message: string
-  time: string
-  read: boolean
-  avatar?: string
-}
-
-const quickNotifications: QuickNotification[] = [
-  {
-    id: "1",
-    title: "Nouveau like",
-    message: "Alex a aimé votre post",
-    time: "5 min",
-    read: false,
-    avatar: "/placeholder.svg?height=32&width=32",
-  },
-  {
-    id: "2",
-    title: "Nouveau commentaire",
-    message: "Claire a commenté votre post",
-    time: "15 min",
-    read: false,
-    avatar: "/placeholder.svg?height=32&width=32",
-  },
-  {
-    id: "3",
-    title: "Demande d'ami",
-    message: "Moussa souhaite vous ajouter",
-    time: "1h",
-    read: false,
-    avatar: "/placeholder.svg?height=32&width=32",
-  },
-]
+import { Notification } from "@/types/news"
 
 export function NotificationBell() {
-  const [notifications, setNotifications] = useState<QuickNotification[]>(quickNotifications)
+  const [notifications, setNotifications] = useState<Notification[]>([])
   const [isOpen, setIsOpen] = useState(false)
 
-  const unreadCount = notifications.filter((n) => !n.read).length
-
-  const markAsRead = (id: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications`)
+      const data = await res.json()
+      if (Array.isArray(data)) {
+        setNotifications(data)
+      } else if (Array.isArray(data.notifications)) {
+        setNotifications(data.notifications)
+      } else {
+        setNotifications([])
+      }
+    } catch (err) {
+      console.error("Erreur de récupération :", err)
+      setNotifications([])
+    }
   }
+
+  const markAsRead = async (id: string) => {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ read: true }),
+    })
+    fetchNotifications()
+  }
+
+  useEffect(() => {
+    fetchNotifications()
+  }, [])
+
+  const unreadCount = notifications.filter((n) => !n.read).length
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -127,7 +118,6 @@ export function NotificationBell() {
             className="w-full text-sm"
             onClick={() => {
               setIsOpen(false)
-              // Navigation vers la page notifications
               window.location.href = "/notifications"
             }}
           >

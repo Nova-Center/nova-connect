@@ -1,73 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Bell, Check, X, Heart, MessageCircle, UserPlus, Calendar, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-
-interface Notification {
-  id: string
-  type: "like" | "comment" | "friend" | "event" | "system"
-  title: string
-  message: string
-  time: string
-  read: boolean
-  avatar?: string
-  userName?: string
-}
-
-const mockNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "like",
-    title: "Nouveau like",
-    message: "Alex a aimé votre post sur les technologies Node.js",
-    time: "Il y a 5 minutes",
-    read: false,
-    avatar: "/placeholder.svg?height=40&width=40",
-    userName: "Alex",
-  },
-  {
-    id: "2",
-    type: "comment",
-    title: "Nouveau commentaire",
-    message: "Claire a commenté votre post : 'Très intéressant, merci pour le partage !'",
-    time: "Il y a 15 minutes",
-    read: false,
-    avatar: "/placeholder.svg?height=40&width=40",
-    userName: "Claire",
-  },
-  {
-    id: "3",
-    type: "friend",
-    title: "Nouvelle demande d'ami",
-    message: "Moussa souhaite vous ajouter à ses amis",
-    time: "Il y a 1 heure",
-    read: false,
-    avatar: "/placeholder.svg?height=40&width=40",
-    userName: "Moussa",
-  },
-  {
-    id: "4",
-    type: "event",
-    title: "Rappel d'événement",
-    message: "L'événement 'Meetup Tech' commence dans 2 heures",
-    time: "Il y a 2 heures",
-    read: true,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "5",
-    type: "system",
-    title: "Mise à jour NovaPoints",
-    message: "Vous avez gagné 12 NovaPoints aujourd'hui ! Continuez comme ça.",
-    time: "Il y a 3 heures",
-    read: true,
-  },
-]
+import { Notification } from "@/types/news"
 
 const getNotificationIcon = (type: string) => {
   switch (type) {
@@ -87,33 +27,60 @@ const getNotificationIcon = (type: string) => {
 }
 
 export function NotificationsList() {
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
+  const [notifications, setNotifications] = useState<Notification[]>([])
   const [activeTab, setActiveTab] = useState("all")
 
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications`)
+      const data = await res.json()
+      console.log(data);
+      if (Array.isArray(data)) {
+        setNotifications(data)
+      } else if (Array.isArray(data.notifications)) {
+        setNotifications(data.notifications)
+      } else {
+        setNotifications([])
+      }
+    } catch (err) {
+      console.error("Erreur récupération:", err)
+      setNotifications([])
+    }
+  }
+
+  const markAsRead = async (id: string) => {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications/notifications/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ read: true }),
+    })
+    fetchNotifications()
+  }
+
+  const deleteNotification = async (id: string) => {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notifications/notifications/${id}`, {
+      method: "DELETE",
+    })
+    fetchNotifications()
+  }
+
+  const markAllAsRead = async () => {
+    const unread = notifications.filter((n) => !n.read)
+    await Promise.all(unread.map((n) => markAsRead(n.id)))
+  }
+
+  useEffect(() => {
+    fetchNotifications()
+  }, [])
+
   const unreadCount = notifications.filter((n) => !n.read).length
-
-  const markAsRead = (id: string) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
-  }
-
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
-  }
-
-  const deleteNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id))
-  }
-
-  const filteredNotifications = notifications.filter((notification) => {
-    if (activeTab === "unread") return !notification.read
-    if (activeTab === "read") return notification.read
-    return true
-  })
+  const filteredNotifications = notifications.filter((n) =>
+    activeTab === "unread" ? !n.read : activeTab === "read" ? n.read : true
+  )
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6 max-w-4xl">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -138,7 +105,6 @@ export function NotificationsList() {
           )}
         </div>
 
-        {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
           <TabsList className="grid w-full grid-cols-3 max-w-md">
             <TabsTrigger value="all">Toutes ({notifications.length})</TabsTrigger>
@@ -172,7 +138,6 @@ export function NotificationsList() {
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
-                        {/* Avatar ou icône */}
                         <div className="flex-shrink-0">
                           {notification.avatar ? (
                             <Avatar className="h-10 w-10">
@@ -186,7 +151,6 @@ export function NotificationsList() {
                           )}
                         </div>
 
-                        {/* Contenu */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1">
@@ -197,11 +161,10 @@ export function NotificationsList() {
                               <p className="text-sm text-muted-foreground mb-2">{notification.message}</p>
                               <div className="flex items-center gap-2">
                                 <span className="text-xs text-muted-foreground">{notification.time}</span>
-                                <div className="flex items-center gap-1">{getNotificationIcon(notification.type)}</div>
+                                {getNotificationIcon(notification.type)}
                               </div>
                             </div>
 
-                            {/* Actions */}
                             <div className="flex items-center gap-1">
                               {!notification.read && (
                                 <Button
