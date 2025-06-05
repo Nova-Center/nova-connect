@@ -204,7 +204,7 @@ export default function ModernEventList() {
   }, [user?.accessToken])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen  from-slate-50 via-white to-blue-50">
       <div className="p-8 space-y-8 max-w-7xl mx-auto">
         {/* Header moderne avec gradient */}
         <div className="text-center space-y-4 pb-8">

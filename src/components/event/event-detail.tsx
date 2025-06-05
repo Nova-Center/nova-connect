@@ -133,7 +133,7 @@ export default function EventDetailPage() {
   const isEventFull = event.participants.length >= event.max_participants
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen  from-slate-50 via-white to-blue-50">
       <div className="container max-w-4xl mx-auto p-6 space-y-8">
         {/* Bouton retour */}
         <Button onClick={() => router.back()} variant="ghost" className="mb-4 hover:bg-white/80 rounded-xl">

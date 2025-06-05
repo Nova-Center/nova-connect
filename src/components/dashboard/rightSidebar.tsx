@@ -5,6 +5,9 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useSession } from "next-auth/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { MessageCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 interface User {
   id: number
@@ -19,7 +22,7 @@ export default function RightSidebar() {
   const { data: session } = useSession()
   const user = session?.user
 
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState < User[] > ([])
   const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
@@ -49,6 +52,18 @@ export default function RightSidebar() {
 
   return (
     <aside className="hidden lg:block lg:w-80 xl:w-96 border-l border-border bg-muted/40">
+      {/* Logo + titre */}
+      <div className="flex items-center gap-3">
+        <Image
+          src="/images/nova-connect-logo.png"
+          alt="Logo Nova Connect"
+          width={60}
+          height={60}
+          className="h-10 w-10 rounded-xl"
+        />
+        <span className="font-semibold text-xl">Nova Connect</span>
+      </div>
+
       <div className="flex h-full max-h-screen flex-col gap-2 p-4">
         {/* Champ de recherche */}
         <div className="relative">
@@ -80,6 +95,10 @@ export default function RightSidebar() {
                     <span className="text-xs text-muted-foreground">{user.nova_points} pts</span>
                   </div>
                 </div>
+
+                <Button variant="ghost" size="icon" className="text-muted-foreground">
+                  <MessageCircle className="h-4 w-4" />
+                </Button>
               </div>
             ))}
 
