@@ -36,23 +36,51 @@ export function MainSidebar() {
   const { data: session } = useSession()
   const user = session?.user
   const pathname = usePathname()
+
   const [points, setPoints] = useState<number | null>(null)
+  const [todayPoints, setTodayPoints] = useState<number>(0)
+  const [rank, setRank] = useState<string>("...")
 
   useEffect(() => {
     if (!user?.accessToken) return
 
+    // Points totaux
     axios
       .get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/me/nova-points`, {
         headers: { Authorization: `Bearer ${user.accessToken}` },
       })
       .then((res) => setPoints(res.data.points ?? null))
       .catch(() => setPoints(null))
+
+    // Points aujourd'hui
+    axios
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/nova-points/history/${user.id}`, {
+        headers: { Authorization: `Bearer ${user.accessToken}` },
+      })
+      .then((res) => {
+        const today = new Date().toDateString()
+        const todayTotal = res.data
+          .filter((entry: any) => new Date(entry.created_at).toDateString() === today)
+          .reduce((sum: number, entry: any) => sum + entry.points, 0)
+        setTodayPoints(todayTotal)
+      })
+      .catch(() => setTodayPoints(0))
+
+    // Classement
+    axios
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/nova-points/leaderboard`, {
+        headers: { Authorization: `Bearer ${user.accessToken}` },
+      })
+      .then((res) => {
+        const index = res.data.findIndex((u: any) => u.id === user.id)
+        setRank(index >= 0 ? `#${index + 1}` : "Non classé")
+      })
+      .catch(() => setRank("N/A"))
   }, [user?.accessToken])
 
   return (
     <Sidebar className="w-80">
       <SidebarHeader className="p-4">
-        {/* Section Profil */}
         <div className="flex items-center gap-3 mb-4">
           <Avatar className="h-12 w-12">
             <AvatarImage src={user?.avatar || "/placeholder-post.svg?height=48&width=48&text=ME"} />
@@ -64,14 +92,12 @@ export function MainSidebar() {
           </div>
         </div>
 
-        {/* Bouton Nouveau Post */}
         <div className="mb-4">
           <CreatePostButton />
         </div>
       </SidebarHeader>
 
       <SidebarContent className="space-y-4">
-        {/* Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -92,12 +118,10 @@ export function MainSidebar() {
 
         <SidebarSeparator />
 
-        {/* Section NovaPoints stylée */}
         <SidebarGroup>
           <SidebarGroupLabel>NovaPoints</SidebarGroupLabel>
           <SidebarGroupContent>
             <div className="space-y-3">
-              {/* Affichage principal des points */}
               <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg p-4 border border-blue-200/20">
                 <div className="flex items-center justify-between">
                   <div>
@@ -108,19 +132,17 @@ export function MainSidebar() {
                 </div>
               </div>
 
-              {/* Statistiques rapides */}
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-muted/50 rounded-lg p-3 text-center">
-                  <div className="text-lg font-semibold text-green-600">+12</div>
+                  <div className="text-lg font-semibold text-green-600">+{todayPoints}</div>
                   <div className="text-xs text-muted-foreground">Aujourd'hui</div>
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3 text-center">
-                  <div className="text-lg font-semibold text-blue-600">#51</div>
+                  <div className="text-lg font-semibold text-blue-600">{rank}</div>
                   <div className="text-xs text-muted-foreground">Classement</div>
                 </div>
               </div>
 
-              {/* Progression vers le prochain niveau */}
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Niveau actuel</span>
@@ -141,7 +163,6 @@ export function MainSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      {/* Footer avec paramètres */}
       <SidebarFooter className="p-4">
         <SidebarMenu>
           <SidebarMenuItem>

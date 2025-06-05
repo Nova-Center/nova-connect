@@ -1,3 +1,4 @@
+
 import { MainSidebar } from "@/components/dashboard/main-sidebar"
 import EventList from "@/components/event/event-list"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"

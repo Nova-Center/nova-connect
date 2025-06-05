@@ -3,8 +3,9 @@ import { authOptions } from "../api/auth/[...nextauth]/route"
 import { redirect } from "next/navigation"
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import { MainSidebar } from "@/components/dashboard/main-sidebar"
 import { NotificationsList } from "@/components/news/notification-main"
+import { MainSidebar } from "@/components/dashboard/main-sidebar"
+
 
 export default async function NotificationsPage() {
   const session = await getServerSession(authOptions)
