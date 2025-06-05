@@ -1,20 +1,20 @@
+// Type définition pour les événements
 export interface EventParticipant {
-  id: number
-  username: string
-  email: string
-  avatar?: string
+    id: string
+    name: string
 }
 
 export interface EventItem {
-  id: number
-  user_id: number
-  title: string
-  image: string
-  description: string
-  location: string
-  max_participants: number
-  date: string
-  participants: EventParticipant[]
-  created_at: string
-  updated_at: string
+    id: string
+    title: string
+    description: string
+    location: string
+    date: string
+    max_participants: number
+    participants: EventParticipant[]
+    image?: string
+    created_at: string
+    updated_at: string
+    creator_id?: string
+    created_by?: string
 }
