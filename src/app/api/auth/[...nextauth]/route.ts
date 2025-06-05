@@ -59,14 +59,16 @@ export const authOptions: AuthOptions = {
       return token
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as number
-        session.user.email = token.email as string
-        session.user.accessToken = token.accessToken as string
-        session.user.refreshToken = token.refreshToken as string
+      session.user = {
+        ...session.user,
+        id: token.id as number,
+        email: token.email as string,
+        accessToken: token.accessToken as string,
+        refreshToken: token.refreshToken as string,
       }
       return session
-    },
+    }
+    ,
   },
   pages: {
     signIn: "/auth/login",
