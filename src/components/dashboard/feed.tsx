@@ -32,6 +32,7 @@ export function Feed() {
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null)
 
   const token = session?.user.accessToken
+   console.log("🔎 session =", JSON.stringify(session))
 
   const hasLiked = (post: Post): boolean => {
     return Array.isArray(post.likes) && post.likes.some((like: any) => like.userId === session?.user.id)

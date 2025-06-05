@@ -29,7 +29,7 @@ const navigationItems = [
   { icon: Home, label: "Accueil", href: "/dashboard" },
   { icon: Bell, label: "Notifications", href: "/news" },
   { icon: Users, label: "Amis", href: "/friends" },
-  { icon: Calendar, label: "Événements", href: "/events" },
+  { icon: Calendar, label: "Événements", href: "/event" },
 ]
 
 export function MainSidebar() {

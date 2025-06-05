@@ -39,7 +39,6 @@ const fetchNotifications = async () => {
       },
     })
 
-    console.log("🔎 res.data =", res.data)
 
     const rawData = Array.isArray(res.data.data) ? res.data.data : []
 
