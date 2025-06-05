@@ -2,6 +2,7 @@
 export interface EventParticipant {
     id: string
     name: string
+    avatar? : string
 }
 
 export interface EventItem {
