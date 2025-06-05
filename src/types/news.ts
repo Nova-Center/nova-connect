@@ -1,10 +1,10 @@
 export interface Notification {
-  id: string
-  type: "like" | "comment" | "friend" | "event" | "system"
+  id: number
   title: string
-  message: string
-  time: string
-  read: boolean
-  avatar?: string
-  userName?: string
+  content: string
+  excerpt: string
+  tags: string[]
+  user_id: number
+  created_at: string
+  updated_at: string
 }

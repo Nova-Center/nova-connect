@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Notification } from "@/types/news"
 import axios from "axios"
 
-const getNotificationIcon = (type: string) => {
+const getNotificationIcon = (type?: string) => {
   switch (type) {
     case "like": return <Heart className="h-4 w-4 text-red-500" />
     case "comment": return <MessageCircle className="h-4 w-4 text-blue-500" />
@@ -26,46 +26,52 @@ const getNotificationIcon = (type: string) => {
 
 export function NotificationsList() {
   const { data: session } = useSession()
-  const user = session?.user as any
-  const [notifications, setNotifications] = useState<Notification[]>([])
+  const user = session?.user
+  const [notifications, setNotifications] = useState<(Notification & { read?: boolean })[]>([])
   const [activeTab, setActiveTab] = useState("all")
 
-  const fetchNotifications = async () => {
-    if (!user?.accessToken) return
-    try {
-      const res = await axios.get("/news", {
-        headers: {
-          Authorization: `Bearer ${user.accessToken}`,
-        },
-      })
-      setNotifications(Array.isArray(res.data) ? res.data : res.data.notifications || [])
-    } catch (err) {
-      console.error("Erreur récupération:", err)
-      setNotifications([])
-    }
-  }
-
-  const markAsRead = async (id: string) => {
-    await axios.patch(`/notifications/news/${id}`, { read: true }, {
-      headers: { Authorization: `Bearer ${user.accessToken}` },
+const fetchNotifications = async () => {
+  if (!user?.accessToken) return
+  try {
+    const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/news`, {
+      headers: {
+        Authorization: `Bearer ${user.accessToken}`,
+      },
     })
-    fetchNotifications()
+
+    console.log("🔎 res.data =", res.data)
+
+    const rawData = Array.isArray(res.data.data) ? res.data.data : []
+
+    const mapped = rawData.map((notif: Notification) => ({
+      ...notif,
+      read: false, // temporairement local
+    }))
+
+    setNotifications(mapped)
+  } catch (err) {
+    console.error("Erreur récupération:", err)
+    setNotifications([])
+  }
+}
+
+
+  const markAsRead = async (id: number) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    )
   }
 
-  const deleteNotification = async (id: string) => {
-    await axios.delete(`/notifications/news/${id}`, {
-      headers: { Authorization: `Bearer ${user.accessToken}` },
-    })
-    fetchNotifications()
+  const deleteNotification = (id: number) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id))
   }
 
-  const markAllAsRead = async () => {
-    const unread = notifications.filter((n) => !n.read)
-    await Promise.all(unread.map((n) => markAsRead(n.id)))
+  const markAllAsRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
   }
 
   useEffect(() => {
-    fetchNotifications()
+    if (user?.accessToken) fetchNotifications()
   }, [user?.accessToken])
 
   const unreadCount = notifications.filter((n) => !n.read).length
@@ -76,7 +82,6 @@ export function NotificationsList() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6 max-w-4xl">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -101,7 +106,6 @@ export function NotificationsList() {
           )}
         </div>
 
-        {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
           <TabsList className="grid w-full grid-cols-3 max-w-md">
             <TabsTrigger value="all">Toutes ({notifications.length})</TabsTrigger>
@@ -126,25 +130,17 @@ export function NotificationsList() {
               ) : (
                 filteredNotifications.map((notification) => (
                   <Card key={notification.id}
-                    className={`transition-all duration-200 hover:shadow-md ${
-                      !notification.read
-                        ? "border-l-4 border-l-blue-500 bg-blue-50/50 dark:bg-blue-950/20"
-                        : "hover:bg-muted/50"
-                    }`}
+                    className={`transition-all duration-200 hover:shadow-md ${!notification.read
+                      ? "border-l-4 border-l-blue-500 bg-blue-50/50 dark:bg-blue-950/20"
+                      : "hover:bg-muted/50"
+                      }`}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         <div className="flex-shrink-0">
-                          {notification.avatar ? (
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={notification.avatar} />
-                              <AvatarFallback>{notification.userName?.[0]}</AvatarFallback>
-                            </Avatar>
-                          ) : (
-                            <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-                              {getNotificationIcon(notification.type)}
-                            </div>
-                          )}
+                          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
+                            {getNotificationIcon()}
+                          </div>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
@@ -153,19 +149,34 @@ export function NotificationsList() {
                                 <h4 className="font-medium text-sm">{notification.title}</h4>
                                 {!notification.read && <div className="h-2 w-2 bg-blue-500 rounded-full" />}
                               </div>
-                              <p className="text-sm text-muted-foreground mb-2">{notification.message}</p>
+                              <p className="text-sm text-muted-foreground mb-2">
+                                {notification.excerpt || notification.content}
+                              </p>
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-muted-foreground">{notification.time}</span>
-                                {getNotificationIcon(notification.type)}
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(notification.created_at).toLocaleString("fr-FR")}
+                                </span>
+                                {getNotificationIcon()}
                               </div>
                             </div>
+
                             <div className="flex items-center gap-1">
                               {!notification.read && (
-                                <Button variant="ghost" size="sm" onClick={() => markAsRead(notification.id)} className="h-8 w-8 p-0">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => markAsRead(notification.id)}
+                                  className="h-8 w-8 p-0"
+                                >
                                   <Check className="h-3 w-3" />
                                 </Button>
                               )}
-                              <Button variant="ghost" size="sm" onClick={() => deleteNotification(notification.id)} className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteNotification(notification.id)}
+                                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                              >
                                 <X className="h-3 w-3" />
                               </Button>
                             </div>
