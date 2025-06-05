@@ -5,8 +5,8 @@ import { redirect } from "next/navigation"
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { MainSidebar } from "@/components/dashboard/main-sidebar"
-import { RightSidebar } from "@/components/dashboard/rightSidebar"
 import { Feed } from "@/components/dashboard/feed"
+import RightSidebar from "@/components/dashboard/rightSidebar"
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)

@@ -1,81 +1,93 @@
-// RightSidebar.tsx
 "use client"
 
-import Image from "next/image"
-import { Search, MessageCircle } from "lucide-react"
-import { Input } from "@/components/ui/input"
 import { useEffect, useState } from "react"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { useSession } from "next-auth/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface User {
   id: number
   username: string
+  email: string
   avatar?: string | null
-  isOnline: boolean
-  points: number
+  nova_points: number
+  is_banned: boolean
 }
 
-export function RightSidebar() {
+export default function RightSidebar() {
+  const { data: session } = useSession()
+  const user = session?.user
+
   const [users, setUsers] = useState<User[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
 
   useEffect(() => {
-    // Mocked user data until API is ready
-    setUsers([
-      { id: 1, username: "Alex", avatar: null, isOnline: true, points: 350 },
-      { id: 2, username: "Claire", avatar: null, isOnline: false, points: 125 },
-      { id: 3, username: "Moussa", avatar: null, isOnline: true, points: 490 },
-    ])
-  }, [])
+    const fetchUsers = async () => {
+      if (!user?.accessToken) return
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/all`, {
+          headers: {
+            Authorization: `Bearer ${user.accessToken}`,
+          },
+        })
+
+        const data = await res.json()
+        //console.log("sideBar DATA =>"+ JSON.stringify(data))
+        setUsers(data.data)
+      } catch (error) {
+        console.error("Erreur chargement utilisateurs :", error)
+      }
+    }
+
+    fetchUsers()
+  }, [user?.accessToken])
+
+  const filteredUsers = users.filter((u) =>
+    u.username.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   return (
-   <aside className="fixed right-0 top-0 h-screen w-80 bg-background border-l border-muted px-5 py-6 overflow-y-auto space-y-6">
-      {/* Logo + titre */}
-      <div className="flex items-center gap-3">
-        <Image
-          src="/images/nova-connect-logo.png"
-          alt="Logo Nova Connect"
-          width={60}
-          height={60}
-          className="h-10 w-10 rounded-xl"
-        />
-        <span className="font-semibold text-xl">Nova Connect</span>
-      </div>
+    <aside className="hidden lg:block lg:w-80 xl:w-96 border-l border-border bg-muted/40">
+      <div className="flex h-full max-h-screen flex-col gap-2 p-4">
+        {/* Champ de recherche */}
+        <div className="relative">
+          <Input
+            placeholder="Rechercher..."
+            className="pl-9 bg-muted/50 border-none text-foreground"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
 
-      {/* Barre de recherche */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          placeholder="Rechercher..."
-          className="pl-9 bg-muted/50 border-none text-foreground"
-        />
-      </div>
+        {/* Liste des utilisateurs */}
+        <ScrollArea className="flex-1">
+          <div className="space-y-3 mt-2">
+            {filteredUsers.map((user) => (
+              <div key={user.id} className="flex items-center justify-between gap-4 p-2 rounded-lg bg-background hover:bg-muted transition">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-9 w-9">
+                    {user.avatar ? (
+                      <AvatarImage src={user.avatar} />
+                    ) : (
+                      <AvatarFallback>
+                        {user.username.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="font-medium text-sm">{user.username}</span>
+                    <span className="text-xs text-muted-foreground">{user.nova_points} pts</span>
+                  </div>
+                </div>
+              </div>
+            ))}
 
-      {/* Liste des utilisateurs */}
-      <div className="space-y-4">
-        {users.map((user) => (
-          <div key={user.id} className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src={user.avatar || `/placeholder-post.svg?text=${user.username[0]}`} />
-                  <AvatarFallback>{user.username[0]}</AvatarFallback>
-                </Avatar>
-                <span
-                  className={`absolute bottom-0 right-0 h-2 w-2 rounded-full border border-white ${
-                    user.isOnline ? "bg-green-500" : "bg-gray-400"
-                  }`}
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">{user.username}</span>
-                <span className="text-xs text-muted-foreground">{user.points} pts</span>
-              </div>
-            </div>
-            <button className="hover:text-foreground text-muted-foreground">
-              <MessageCircle className="h-4 w-4" />
-            </button>
+            {filteredUsers.length === 0 && (
+              <p className="text-center text-muted-foreground text-sm mt-4">Aucun utilisateur trouvé</p>
+            )}
           </div>
-        ))}
+        </ScrollArea>
       </div>
     </aside>
   )
