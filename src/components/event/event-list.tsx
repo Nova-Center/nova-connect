@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { MapPin, Users, CalendarDays, Plus, Trash2, Upload, X } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 import { EventItem } from "@/types/event"
+import Link from "next/link"
 
 
 export default function EventList() {
@@ -372,69 +373,72 @@ export default function EventList() {
                 ) : (
                     <div className="space-y-4">
                         {events.map((event) => (
-                            <Card key={event.id} className="hover:shadow-md transition-shadow border-0 shadow-sm bg-white">
-                                <CardContent className="p-4 flex flex-col md:flex-row gap-4">
-                                    <img
-                                        src={event.image || "/placeholder.svg?height=128&width=192"}
-                                        alt={event.title}
-                                        className="w-full md:w-48 h-32 object-cover rounded-lg"
-                                    />
-                                    <div className="flex-1 space-y-3">
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex-1">
-                                                <h2 className="text-lg font-semibold text-gray-900 mb-1">{event.title}</h2>
-                                                <p className="text-sm text-gray-600">{event.description}</p>
-                                            </div>
-
-                                            {/* Menu d'actions pour le créateur */}
-                                            {isEventCreator(event) && (
-                                                <div className="relative">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-8 w-8 p-0"
-                                                        onClick={() => {
-                                                            if (confirm("Êtes-vous sûr de vouloir supprimer cet événement ?")) {
-                                                                deleteEvent(event.id)
-                                                            }
-                                                        }}
-                                                    >
-                                                        <Trash2 className="h-4 w-4 text-red-500" />
-                                                    </Button>
+                            <Link key={event.id} href={`/event/${event.id}`} className="block">
+                                <Card className="hover:shadow-md transition-shadow border-0 shadow-sm bg-white">
+                                    <CardContent className="p-4 flex flex-col md:flex-row gap-4">
+                                        <img
+                                            src={event.image || "/placeholder.svg?height=128&width=192"}
+                                            alt={event.title}
+                                            className="w-full md:w-48 h-32 object-cover rounded-lg"
+                                        />
+                                        <div className="flex-1 space-y-3">
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex-1">
+                                                    <h2 className="text-lg font-semibold text-gray-900 mb-1">{event.title}</h2>
+                                                    <p className="text-sm text-gray-600">{event.description}</p>
                                                 </div>
-                                            )}
-                                        </div>
 
-                                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                                            <div className="flex items-center gap-1">
-                                                <MapPin className="h-4 w-4" />
-                                                <span>{event.location}</span>
+                                                {/* Menu d'actions pour le créateur */}
+                                                {isEventCreator(event) && (
+                                                    <div className="relative">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-8 w-8 p-0"
+                                                            onClick={() => {
+                                                                if (confirm("Êtes-vous sûr de vouloir supprimer cet événement ?")) {
+                                                                    deleteEvent(event.id)
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Trash2 className="h-4 w-4 text-red-500" />
+                                                        </Button>
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="flex items-center gap-1">
-                                                <CalendarDays className="h-4 w-4" />
-                                                <span>{new Date(event.date).toLocaleDateString("fr-FR")}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <Users className="h-4 w-4" />
-                                                <span>
-                                                    {event.participants?.length || 0} / {event.max_participants} participants
-                                                </span>
-                                            </div>
-                                        </div>
 
-                                        <div className="flex items-center justify-between">
-                                            <Badge variant="secondary" className="text-xs">
-                                                Ajouté le {new Date(event.created_at).toLocaleDateString("fr-FR")}
-                                            </Badge>
-                                            {!isEventCreator(event) && (
-                                                <Button size="sm" variant="outline" className="text-sm">
-                                                    Participer
-                                                </Button>
-                                            )}
+                                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                                                <div className="flex items-center gap-1">
+                                                    <MapPin className="h-4 w-4" />
+                                                    <span>{event.location}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <CalendarDays className="h-4 w-4" />
+                                                    <span>{new Date(event.date).toLocaleDateString("fr-FR")}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <Users className="h-4 w-4" />
+                                                    <span>
+                                                        {event.participants?.length || 0} / {event.max_participants} participants
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between">
+                                                <Badge variant="secondary" className="text-xs">
+                                                    Ajouté le {new Date(event.created_at).toLocaleDateString("fr-FR")}
+                                                </Badge>
+                                                {!isEventCreator(event) && (
+                                                    <Button size="sm" variant="outline" className="text-sm">
+                                                        Participer
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+
                         ))}
                     </div>
                 )}

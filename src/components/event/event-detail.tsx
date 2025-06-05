@@ -117,7 +117,7 @@ export default function EventDetailPage() {
                     <AvatarImage src={participant.avatar} />
                   ) : (
                     <AvatarFallback>
-                      {participant.name[0]}
+                      {participant.name ? participant.name[0] : "?"}
                     </AvatarFallback>
                   )}
                 </Avatar>
