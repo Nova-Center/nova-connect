@@ -28,8 +28,9 @@ import { CreatePostButton } from "@/components/posts/create-post-button"
 const navigationItems = [
   { icon: Home, label: "Accueil", href: "/dashboard" },
   { icon: Bell, label: "Notifications", href: "/news" },
-  { icon: Users, label: "Amis", href: "/friends" },
-  { icon: Calendar, label: "Événements", href: "/event" },
+  { icon: Users, label: "Service", href: "/service" },
+  { icon: Calendar, label: "Événements", href: "/service" },
+  { icon: Calendar, label: "Shop", href: "/shop" },
 ]
 
 export function MainSidebar() {

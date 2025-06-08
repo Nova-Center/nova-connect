@@ -1,5 +1,5 @@
 import { MainSidebar } from "@/components/dashboard/main-sidebar"
-import EventDetailPage from "@/components/event/event-detail"
+import EventDetailPage from "@/components/events/event-detail"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 export default function EvenementsPage() {
