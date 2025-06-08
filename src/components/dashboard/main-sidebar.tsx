@@ -4,7 +4,7 @@ import { useSession, signOut } from "next-auth/react"
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import axios from "axios"
-import { Home, Bell, Users, Calendar, Settings, LogOut } from "lucide-react"
+import { Home, Bell, Users, Calendar, Settings, LogOut, ShoppingBag, Zap } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -29,8 +29,8 @@ const navigationItems = [
   { icon: Home, label: "Accueil", href: "/dashboard" },
   { icon: Bell, label: "Notifications", href: "/news" },
   { icon: Users, label: "Service", href: "/services" },
-  { icon: Calendar, label: "Événements", href: "/service" },
-  { icon: Calendar, label: "Shop", href: "/shop" },
+  { icon: Calendar, label: "Événements", href: "/event" },
+  { icon: ShoppingBag, label: "Shop", href: "/shop" },
 ]
 
 export function MainSidebar() {
@@ -79,17 +79,30 @@ export function MainSidebar() {
       .catch(() => setRank("N/A"))
   }, [user?.accessToken])
 
+  const currentLevel = Math.floor((points ?? 0) / 100) + 1
+  const progressToNext = (points ?? 0) % 100
+
   return (
-    <Sidebar className="w-80">
-      <SidebarHeader className="p-4">
-        <div className="flex items-center gap-3 mb-4">
-          <Avatar className="h-12 w-12">
-            <AvatarImage src={user?.avatar || "/placeholder-post.svg?height=48&width=48&text=ME"} />
-            <AvatarFallback className="text-lg">{user?.email?.[0]?.toUpperCase() || "ME"}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <div className="font-semibold text-base">{user?.email?.split("@")[0] || "Mon Profil"}</div>
-            <div className="text-sm text-muted-foreground">🎯 {points ?? "-"} NovaPoints</div>
+    <Sidebar className="w-80 border-r border-border/40 bg-gradient-to-b from-background to-muted/20">
+      <SidebarHeader className="p-6 border-b border-border/40">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="relative">
+            <Avatar className="h-14 w-14 ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
+              <AvatarImage src={user?.avatar || "/placeholder.svg?height=56&width=56"} />
+              <AvatarFallback className="text-lg font-semibold bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
+                {user?.email?.[0]?.toUpperCase() || "ME"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-green-500 rounded-full border-2 border-background flex items-center justify-center">
+              <div className="h-2 w-2 bg-white rounded-full"></div>
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-lg truncate">{user?.email?.split("@")[0] || "Mon Profil"}</div>
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <Zap className="h-3 w-3 text-amber-500" />
+              <span className="font-medium">{points ?? "-"} NovaPoints</span>
+            </div>
           </div>
         </div>
 
@@ -98,17 +111,24 @@ export function MainSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="space-y-4">
+      <SidebarContent className="space-y-6 px-4">
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">
+            Navigation
+          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {navigationItems.map((item) => (
-                <SidebarMenuItem key={item.href} className="py-1">
-                  <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.label}>
-                    <a href={item.href} className="flex items-center gap-2">
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === item.href}
+                    tooltip={item.label}
+                    className="h-11 rounded-xl transition-all duration-200 hover:bg-muted/60 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:border data-[active=true]:border-primary/20"
+                  >
+                    <a href={item.href} className="flex items-center gap-3 px-3">
                       <item.icon className="h-5 w-5" />
-                      <span>{item.label}</span>
+                      <span className="font-medium">{item.label}</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -117,46 +137,55 @@ export function MainSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarSeparator />
+        <SidebarSeparator className="bg-border/40" />
 
         <SidebarGroup>
-          <SidebarGroupLabel>NovaPoints</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">
+            NovaPoints
+          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <div className="space-y-3">
-              <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg p-4 border border-blue-200/20">
-                <div className="flex items-center justify-between">
+            <div className="space-y-4">
+              <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-2xl p-5 border border-primary/10">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary/20 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
+                <div className="relative flex items-center justify-between">
                   <div>
-                    <div className="text-2xl font-bold text-foreground">{points ?? "---"}</div>
-                    <div className="text-sm text-muted-foreground">Points totaux</div>
+                    <div className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                      {points ?? "---"}
+                    </div>
+                    <div className="text-sm text-muted-foreground font-medium">Points totaux</div>
                   </div>
-                  <div className="text-3xl">🎯</div>
+                  <div className="text-4xl">🎯</div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-muted/50 rounded-lg p-3 text-center">
-                  <div className="text-lg font-semibold text-green-600">+{todayPoints}</div>
-                  <div className="text-xs text-muted-foreground">Aujourd'hui</div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gradient-to-br from-green-500/10 to-green-600/5 rounded-xl p-4 text-center border border-green-500/10">
+                  <div className="text-xl font-bold text-green-600">+{todayPoints}</div>
+                  <div className="text-xs text-muted-foreground font-medium">Aujourd'hui</div>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-3 text-center">
-                  <div className="text-lg font-semibold text-blue-600">{rank}</div>
-                  <div className="text-xs text-muted-foreground">Classement</div>
+                <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-xl p-4 text-center border border-blue-500/10">
+                  <div className="text-xl font-bold text-blue-600">{rank}</div>
+                  <div className="text-xs text-muted-foreground font-medium">Classement</div>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Niveau actuel</span>
-                  <span className="font-medium">Niveau 1</span>
+              <div className="space-y-3 bg-muted/30 rounded-xl p-4 border border-border/40">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground font-medium">Niveau actuel</span>
+                  <span className="font-semibold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                    Niveau {currentLevel}
+                  </span>
                 </div>
-                <div className="w-full bg-muted rounded-full h-2">
+                <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(points ?? 0) % 100}%` }}
-                  />
+                    className="bg-gradient-to-r from-primary to-primary/80 h-3 rounded-full transition-all duration-500 ease-out relative overflow-hidden"
+                    style={{ width: `${progressToNext}%` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground text-center">
-                  {100 - ((points ?? 0) % 100)} points pour le niveau suivant
+                <div className="text-xs text-muted-foreground text-center font-medium">
+                  {100 - progressToNext} points pour le niveau suivant
                 </div>
               </div>
             </div>
@@ -164,24 +193,31 @@ export function MainSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4 border-t border-border/40">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <a href="/settings" className="flex items-center gap-2">
+            <SidebarMenuButton asChild className="h-11 rounded-xl hover:bg-muted/60">
+              <a href="/settings" className="flex items-center gap-3 px-3">
                 <Settings className="h-5 w-5" />
-                <span>Paramètres</span>
+                <span className="font-medium">Paramètres</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
 
-        <div className="flex items-center justify-between gap-2 mt-2">
-          <div className="text-xs text-muted-foreground">ID: {user?.id || "inconnu"}</div>
+        <div className="flex items-center justify-between gap-2 mt-3 px-2">
+          <div className="text-xs text-muted-foreground font-mono bg-muted/50 px-2 py-1 rounded">
+            ID: {user?.id || "inconnu"}
+          </div>
           <div className="flex gap-1">
             <ThemeToggle />
-            <Button variant="ghost" size="icon" onClick={() => signOut({ callbackUrl: "/" })}>
-              <LogOut className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="h-9 w-9 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </div>
