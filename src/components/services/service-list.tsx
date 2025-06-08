@@ -7,13 +7,17 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "@/hooks/use-toast"
 
+interface Participant {
+  id: number
+}
+
 interface Service {
   id: number
   title: string
   description: string
   date: string
   owner_id: number
-  volunteer_id: number | null
+  participants: Participant[]
 }
 
 export default function ServiceList() {
@@ -43,12 +47,22 @@ export default function ServiceList() {
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/services/${serviceId}/volunteer`,
         {},
-        { headers: { Authorization: `Bearer ${user?.accessToken}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${user?.accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
       )
-      toast({ title: "Inscrit au service avec succès" })
+      toast({ title: "Inscription au service réussie 🎉" })
       fetchServices()
-    } catch (err) {
-      toast({ title: "Erreur lors de l'inscription", variant: "destructive" })
+    } catch (err: any) {
+      console.error("Erreur inscription service:", err.response?.data || err.message)
+      toast({
+        title: "Erreur lors de l'inscription",
+        description: err.response?.data?.message || "Vérifiez vos droits ou l'état du service",
+        variant: "destructive",
+      })
     }
   }
 
@@ -57,12 +71,36 @@ export default function ServiceList() {
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/services/${serviceId}/unvolunteer`,
         {},
-        { headers: { Authorization: `Bearer ${user?.accessToken}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${user?.accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
       )
-      toast({ title: "Désinscrit du service" })
+      toast({ title: "Désinscription réussie" })
       fetchServices()
     } catch (err) {
+      console.error("Erreur désinscription:", err)
       toast({ title: "Erreur de désinscription", variant: "destructive" })
+    }
+  }
+
+  const handleDelete = async (serviceId: number) => {
+    try {
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/services/${serviceId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${user?.accessToken}`,
+          },
+        }
+      )
+      toast({ title: "Service supprimé avec succès ✅" })
+      fetchServices()
+    } catch (err) {
+      console.error("Erreur suppression service:", err)
+      toast({ title: "Erreur suppression", variant: "destructive" })
     }
   }
 
@@ -81,26 +119,36 @@ export default function ServiceList() {
       ) : services.length === 0 ? (
         <p className="text-muted-foreground">Aucun service pour le moment.</p>
       ) : (
-        services.map((service) => (
-          <Card key={service.id}>
-            <CardContent className="p-4 space-y-2">
-              <h2 className="font-semibold text-lg">{service.title}</h2>
-              <p className="text-muted-foreground text-sm">{service.description}</p>
-              <p className="text-sm">Date : {new Date(service.date).toLocaleDateString("fr-FR")}</p>
+        services.map((service) => {
+          const isOwner = service.owner_id === user.id
+          const isParticipant = Array.isArray(service.participants) && service.participants.some((p) => p.id === user.id)
 
-              {service.volunteer_id === user.id ? (
-                <Button variant="destructive" onClick={() => handleUnvolunteer(service.id)}>
-                  Se retirer du service
-                </Button>
-              ) : (
-                <Button onClick={() => handleVolunteer(service.id)}>
-                  Participer
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ))
+
+          return (
+            <Card key={service.id}>
+              <CardContent className="p-4 space-y-2">
+                <h2 className="font-semibold text-lg">{service.title}</h2>
+                <p className="text-muted-foreground text-sm">{service.description}</p>
+                <p className="text-sm">Date : {new Date(service.date).toLocaleDateString("fr-FR")}</p>
+
+                {isOwner ? (
+                  <Button variant="destructive" onClick={() => handleDelete(service.id)}>
+                    Supprimer
+                  </Button>
+                ) : isParticipant ? (
+                  <Button variant="destructive" onClick={() => handleUnvolunteer(service.id)}>
+                    Se retirer du service
+                  </Button>
+                ) : (
+                  <Button onClick={() => handleVolunteer(service.id)}>
+                    Participer
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          )
+        })
       )}
     </div>
   )
-}
+} 
