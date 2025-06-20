@@ -90,7 +90,7 @@ export function CreatePostButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full gap-2 bg-gradient-to-r from-rose-500 to-teal-500 hover:from-rose-600 hover:to-teal-600">
+        <Button className="w-full gap-2 bg-gradient-to-r from-violet-300 to-pink-100 rounded-full text-sm font-medium text-violet-700 mb-4">
           <Plus className="h-4 w-4" />
           Créer un post
         </Button>

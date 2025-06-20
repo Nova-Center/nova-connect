@@ -212,10 +212,10 @@ export default function ModernEventList() {
             <Sparkles className="h-4 w-4" />
             Découvrez nos événements
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold">
             Événements à venir
           </h1>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+          <p className="text-lg max-w-2xl mx-auto">
             Rejoignez notre communauté et participez aux événements qui vous passionnent
           </p>
         </div>
@@ -395,11 +395,11 @@ export default function ModernEventList() {
             {[...Array(3)].map((_, i) => (
               <Card key={i} className="animate-pulse border-0 shadow-lg rounded-3xl overflow-hidden">
                 <CardContent className="p-6 flex gap-6">
-                  <div className="w-64 h-40 bg-gradient-to-br from-gray-200 to-gray-300 rounded-2xl"></div>
+                  <div className="w-64 h-40 rounded-2xl"></div>
                   <div className="flex-1 space-y-4">
-                    <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg w-2/3"></div>
-                    <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-full"></div>
-                    <div className="h-4 bg-gradient-to-r from-gray-200 to-gray-300 rounded w-3/4"></div>
+                    <div className="h-6  rounded-lg w-2/3"></div>
+                    <div className="h-4  rounded w-full"></div>
+                    <div className="h-4 rounded w-3/4"></div>
                   </div>
                 </CardContent>
               </Card>
