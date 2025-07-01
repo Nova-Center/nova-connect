@@ -2,8 +2,14 @@
 import { MainSidebar } from "@/components/dashboard/main-sidebar"
 import EventList from "@/components/events/event-list"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { getServerSession } from "next-auth"
+import { redirect } from "next/navigation"
+import { authOptions } from "../api/auth/[...nextauth]/route"
 
-export default function EvenementsPage() {
+export default async function EvenementsPage() {
+    const session = await getServerSession(authOptions)
+    if (!session) redirect("/auth/login")
+  
    return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
