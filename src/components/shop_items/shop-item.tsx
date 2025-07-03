@@ -25,7 +25,7 @@ export function ShopItem({ item, onClick }: ShopItemProps) {
     <Card className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] overflow-hidden">
       <div className="relative overflow-hidden">
         <Image
-          src={item.image || "/placeholder.svg?height=200&width=300"}
+          src={item.image || "/placeholder-post.svg?height=200&width=300"}
           alt={item.name}
           width={300}
           height={200}

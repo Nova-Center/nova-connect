@@ -16,6 +16,7 @@ interface Service {
   description: string
   date: string
   owner_id: number
+  volunteer_id: number | null
   owner_name?: string
   participants?: Array<{ id: number; username?: string }>
 }
@@ -204,6 +205,7 @@ export default function ServiceList({ searchQuery = "", refreshTrigger = 0 }: Se
         const isOwner = service.owner_id === user.id
         const isParticipant = userParticipations.has(service.id)
         const participantCount = service.participants?.length || 0
+        const hasVolunteer = service.volunteer_id !== null
 
         return (
           <Card
@@ -285,6 +287,15 @@ export default function ServiceList({ searchQuery = "", refreshTrigger = 0 }: Se
                   >
                     <UserMinus className="mr-2 h-4 w-4" />
                     Annuler participation
+                  </Button>
+                ) : hasVolunteer ? (
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    disabled
+                  >
+                    <UserMinus className="mr-2 h-4 w-4"/>
+                    déjà réservé
                   </Button>
                 ) : (
                   <Button onClick={() => handleParticipate(service.id)} className="w-full">

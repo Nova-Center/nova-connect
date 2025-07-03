@@ -18,6 +18,10 @@ export default function ServiceMain() {
     setRefreshKey((k) => k + 1)
   }
 
+  const handleCountService = () => {
+    return 12;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -78,6 +82,7 @@ export default function ServiceMain() {
           )}
         </div>
 
+
         {/* Statistiques rapides */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-xl p-4 border border-blue-500/10">
@@ -86,7 +91,7 @@ export default function ServiceMain() {
                 <Users className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-blue-600">12</div>
+                <div className="text-2xl font-bold text-blue-600">12{/* ajouter une valeur dynamique*/ }</div>
                 <div className="text-sm text-muted-foreground">Services actifs</div>
               </div>
             </div>
