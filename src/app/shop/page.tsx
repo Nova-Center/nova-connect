@@ -3,6 +3,7 @@ import { MainSidebar } from "@/components/dashboard/main-sidebar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
+import { redirect } from "next/navigation";
 
 export default async function EvenementsPage() {
     const session = await getServerSession(authOptions)
@@ -19,7 +20,5 @@ export default async function EvenementsPage() {
     </SidebarProvider>
   )
 }
-function redirect(arg0: string) {
-  throw new Error("Function not implemented.");
-}
+
 

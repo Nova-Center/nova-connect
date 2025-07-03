@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { toast } from "@/hooks/use-toast"
 
 interface ShopItemType {
   id: number
@@ -46,14 +47,19 @@ export function ShopList() {
   const fetchItems = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/shop-items?page=${currentPage}&per_page=${itemsPerPage}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/shop-items?page=${currentPage}&per_page=${itemsPerPage}`)
       if (response.ok) {
         const data: ShopListResponse = await response.json()
         setItems(data.data)
         setTotalItems(data.meta.total)
       }
     } catch (error) {
-      console.error("Erreur lors du chargement des items:", error)
+        if(error instanceof Error){
+          toast({
+          title : "",
+          description : error.message || "erreur lors de la récupération des shops"
+        })
+        }
     } finally {
       setLoading(false)
     }
@@ -69,7 +75,7 @@ export function ShopList() {
 
   const handleItemClick = async (item: ShopItemType) => {
     try {
-      const response = await fetch(`/api/shop-items/${item.id}`)
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/shop-items/${item.id}`)
       if (response.ok) {
         const detailedItem = await response.json()
         setSelectedItem(detailedItem)
@@ -81,7 +87,7 @@ export function ShopList() {
 
   const handlePurchase = async (itemId: number) => {
     try {
-      const response = await fetch(`/api/shop-items/${itemId}/purchase`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/shop-items/${itemId}/purchase`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
