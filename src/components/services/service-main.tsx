@@ -58,17 +58,6 @@ export default function ServiceMain() {
                 className="pl-12 h-12 bg-background/50 border-border/40 focus:border-primary/40 focus:ring-primary/20 text-base"
               />
             </div>
-
-            <div className="flex gap-2">
-              <Button variant="outline" className="h-12 px-4 border-border/40 hover:bg-muted/60">
-                <Filter className="mr-2 h-4 w-4" />
-                Filtres
-              </Button>
-              <Button variant="outline" className="h-12 px-4 border-border/40 hover:bg-muted/60">
-                <Calendar className="mr-2 h-4 w-4" />
-                Date
-              </Button>
-            </div>
           </div>
 
           {searchQuery && (
