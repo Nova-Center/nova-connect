@@ -1,7 +1,7 @@
 // Type définition pour les événements
 export interface EventParticipant {
     id: string
-    name: string
+    username: string
     avatar? : string
 }
 

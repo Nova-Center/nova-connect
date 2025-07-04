@@ -207,12 +207,12 @@ export default function EventDetailPage() {
                             <AvatarImage src={participant.avatar || "/placeholder-post.svg"} />
                           ) : (
                             <AvatarFallback className="bg-gradient-to-br from-violet-500 to-pink-500 text-white font-semibold">
-                              {participant.name ? participant.name[0].toUpperCase() : "?"}
+                              {participant.username ? participant.username[0].toUpperCase() : "?"}
                             </AvatarFallback>
                           )}
                         </Avatar>
                         <div>
-                          <p className="font-semibold text-gray-900">{participant.name}</p>
+                          <p className="font-semibold text-gray-900">{participant.username}</p>
                           <p className="text-sm text-gray-500">Participant</p>
                         </div>
                       </div>
