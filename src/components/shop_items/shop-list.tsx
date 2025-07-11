@@ -9,27 +9,10 @@ import { Search } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "@/hooks/use-toast"
+import { useSession } from "next-auth/react"
+import axios from "axios"
+import { ShopItemType } from "@/types/shop"
 
-interface ShopItemType {
-  id: number
-  owner_id: number
-  name: string
-  description: string
-  price: number
-  image: string
-  client_id: number
-  date_purchase: string | null
-  created_at: string
-  updated_at: string
-}
-
-interface ShopListResponse {
-  data: ShopItemType[]
-  meta: {
-    total: number
-    page: number
-  }
-}
 
 export function ShopList() {
   const [items, setItems] = useState<ShopItemType[]>([])
@@ -38,6 +21,8 @@ export function ShopList() {
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
+  const session = useSession()
+  const user = session?.data?.user
   const itemsPerPage = 12
 
   useEffect(() => {
@@ -47,12 +32,13 @@ export function ShopList() {
   const fetchItems = async () => {
     try {
       setLoading(true)
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/shop-items?page=${currentPage}&per_page=${itemsPerPage}`)
-      if (response.ok) {
-        const data: ShopListResponse = await response.json()
-        setItems(data.data)
-        setTotalItems(data.meta.total)
-      }
+      console.log("token => " + user?.accessToken)
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/shop-items?page=${currentPage}&per_page=${itemsPerPage}`, {
+        headers : {Authorization : `Bearer ${user?.accessToken}`}
+      })
+      
+      setItems(response.data.data)
+      setTotalItems(response.data.meta.total)
     } catch (error) {
         if(error instanceof Error){
           toast({
@@ -89,9 +75,7 @@ export function ShopList() {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/shop-items/${itemId}/purchase`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: {Authorization: `Bearer ${user?.accessToken}` },
       })
 
       if (response.ok) {
