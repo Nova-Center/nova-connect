@@ -117,7 +117,7 @@ export function RegisterForm() {
     <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden text-black">
       <div className="p-8 space-y-6">
         <div className="text-center space-y-2">
-          <Image src="/nova-connect-logo.png" alt="Logo" width={60} height={60} className="h-10 w-10 rounded-xl" />
+          <Image src="/images/nova-connect-logo.png" alt="Logo" width={60} height={60} className="h-10 w-10 rounded-xl" />
           <div className="font-semibold text-xl">Nova Connect</div>
           <h1 className="text-2xl font-bold">Créer un compte</h1>
           <p className="text-gray-600 text-sm">Rejoignez la communauté</p>

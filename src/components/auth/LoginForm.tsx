@@ -61,7 +61,7 @@ export function LoginForm() {
       <div className="p-8 space-y-6">
         <div className="text-center space-y-2">
           <Image
-            src="/nova-connect-logo.png"
+            src="/images/nova-connect-logo.png"
             alt="Logo"
             width={60}
             height={60}
