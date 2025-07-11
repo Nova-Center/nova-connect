@@ -120,7 +120,7 @@ export function LoginForm() {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-rose-500 to-teal-500 hover:from-rose-600 hover:to-teal-600"
+              className="w-full gap-2 bg-gradient-to-r from-violet-300 to-pink-100 rounded-full text-sm font-medium text-violet-700 mb-4"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Signing in..." : "Sign in"}
