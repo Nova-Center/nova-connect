@@ -1,144 +1,219 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Bell } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { AvatarFallback } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
-import { Notification } from "@/types/news"
-import { useSession } from "next-auth/react"
+import React, { useState, useEffect, useRef } from "react"
 import axios from "axios"
+import { useSession } from "next-auth/react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Send, MessageCircle, Users } from "lucide-react"
 
-export function NotificationBell() {
+interface Message {
+  id: string
+  content: string
+  sender: {
+    id: string
+    name: string
+    avatar?: string
+  }
+  timestamp: string
+  isRead: boolean
+  isOwn: boolean
+}
+
+export default function ChatInterface() {
   const { data: session } = useSession()
   const user = session?.user
-  const [notifications, setNotifications] = useState<(Notification & { read?: boolean })[]>([])
-  const [isOpen, setIsOpen] = useState(false)
+  const token = user?.accessToken
+  const API = process.env.NEXT_PUBLIC_API_URL
 
-  const fetchNotifications = async () => {
-    if (!user?.accessToken) return
-    try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/news`, {
-        headers: {
-          Authorization: `Bearer ${user.accessToken}`,
-        },
-      })
+  const [messages, setMessages] = useState<Message[]>([])
+  const [newMessage, setNewMessage] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+  const endRef = useRef<HTMLDivElement>(null)
 
-     const raw = Array.isArray(res.data.data) ? res.data.data : []
-
-      const mapped = raw.map((notif: Notification) => ({
-        ...notif,
-        read: false,
-      }))
-
-      setNotifications(mapped)
-    } catch (err) {
-      console.error("Erreur API notifications:", err)
-      setNotifications([])
-    }
-  }
-
-
-  const markAsRead = (id: number) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    )
-  }
-
+  // 1️⃣ Charger conversation + compteur non lus
   useEffect(() => {
-    if (user?.accessToken) {
-      fetchNotifications()
-    }
-  }, [user?.accessToken])
+    if (!token) return
 
-  const unreadCount = notifications.filter((n) => !n.read).length
+    const loadChat = async () => {
+      try {
+        const [convRes, countRes] = await Promise.all([
+          axios.get<Message[]>(
+            `${API}/api/v1/messages/messages/conversation`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+          axios.get<{ count: number }>(
+            `${API}/api/v1/messages/messages/unread-count`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+        ])
+        setMessages(convRes.data)
+        setUnreadCount(countRes.data.count)
+      } catch (err) {
+        console.error("Erreur chargement chat:", err)
+      }
+    }
+
+    loadChat()
+  }, [API, token])
+
+  // 📥 scroll auto en bas
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
+
+  // 2️⃣ Envoyer un message
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newMessage.trim() || isLoading || !token) return
+
+    setIsLoading(true)
+    try {
+      const res = await axios.post<Message>(
+        `${API}/api/v1/messages/messages/conversation`,
+        { content: newMessage },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      const sent = { ...res.data, isOwn: true }
+      setMessages((m) => [...m, sent])
+      setNewMessage("")
+    } catch (err) {
+      console.error("Erreur envoi message:", err)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // 3️⃣ Marquer tout comme lu
+  const markAllAsRead = async () => {
+    if (!token) return
+    try {
+      await axios.post(
+        `${API}/api/v1/messages/messages/mark-as-read`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      setMessages((m) => m.map((x) => ({ ...x, isRead: true })))
+      setUnreadCount(0)
+    } catch (err) {
+      console.error("Erreur mark-as-read:", err)
+    }
+  }
+
+  const fmtTime = (ts: string) =>
+    new Date(ts).toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-            >
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </Badge>
-          )}
-        </Button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent align="end" className="w-80 p-0">
-        <div className="p-4 border-b">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold">Notifications</h3>
+    <Card className="h-[600px] flex flex-col">
+      <CardHeader className="bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-t-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <MessageCircle className="h-5 w-5" />
+            <CardTitle className="text-lg">Chat Nova Connect</CardTitle>
+          </div>
+          <div className="flex items-center gap-2">
             {unreadCount > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {unreadCount} nouvelles
+              <Badge
+                variant="secondary"
+                className="bg-white/20 text-white cursor-pointer"
+                onClick={markAllAsRead}
+              >
+                {unreadCount} non lu{unreadCount > 1 && "s"}
               </Badge>
             )}
+            <Users className="h-4 w-4" />
           </div>
         </div>
+      </CardHeader>
 
-        <div className="max-h-96 overflow-y-auto">
-          {notifications.length === 0 ? (
-            <div className="p-8 text-center">
-              <Bell className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Aucune notification</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {notifications.map((notification, index) => (
-                <div key={notification.id}>
-                  <div
-                    className={`p-3 hover:bg-muted/50 cursor-pointer transition-colors ${!notification.read ? "bg-blue-50/50 dark:bg-blue-950/20" : ""
-                      }`}
-                    onClick={() => markAsRead(notification.id)}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs">
-                        <AvatarFallback>{notification.title[0]}</AvatarFallback>
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm truncate">{notification.title}</p>
-                          {!notification.read && (
-                            <div className="h-2 w-2 bg-blue-500 rounded-full flex-shrink-0" />
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {notification.excerpt || notification.content}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(notification.created_at).toLocaleString("fr-FR")}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  {index < notifications.length - 1 && <Separator />}
+      <CardContent className="flex-1 flex flex-col p-0">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+          {messages.map((m) => (
+            <div
+              key={m.id}
+              className={`flex gap-3 ${
+                m.isOwn ? "flex-row-reverse" : "flex-row"
+              }`}
+            >
+              <Avatar className="h-8 w-8 flex-shrink-0">
+                <AvatarImage src={m.sender.avatar || "/placeholder.svg"} />
+                <AvatarFallback className="bg-gradient-to-r from-purple-400 to-blue-400 text-white text-xs">
+                  {m.sender.name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div
+                className={`flex flex-col max-w-[70%] ${
+                  m.isOwn ? "items-end" : "items-start"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs text-gray-500 font-medium">
+                    {m.isOwn ? "Vous" : m.sender.name}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    {fmtTime(m.timestamp)}
+                  </span>
+                  {!m.isOwn && !m.isRead && (
+                    <div className="w-2 h-2 bg-purple-500 rounded-full" />
+                  )}
                 </div>
-              ))}
+                <div
+                  className={`px-4 py-2 rounded-2xl ${
+                    m.isOwn
+                      ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white"
+                      : "bg-white border border-gray-200 text-gray-800"
+                  }`}
+                >
+                  <p className="text-sm">{m.content}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {isLoading && (
+            <div className="flex gap-3">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-gray-300 animate-pulse" />
+              </Avatar>
+              <div className="bg-white border border-gray-200 px-4 py-2 rounded-2xl">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-100" />
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-200" />
+                </div>
+              </div>
             </div>
           )}
+
+          <div ref={endRef} />
         </div>
 
-        <div className="p-3 border-t">
-          <Button
-            variant="ghost"
-            className="w-full text-sm"
-            onClick={() => {
-              setIsOpen(false)
-              window.location.href = "/news"
-            }}
-          >
-            Voir toutes les notifications
-          </Button>
+        <div className="p-4 border-t bg-white">
+          <form onSubmit={handleSend} className="flex gap-2">
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Tapez votre message..."
+              disabled={isLoading}
+              className="flex-1 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+            />
+            <Button
+              type="submit"
+              disabled={!newMessage.trim() || isLoading}
+              className="bg-gradient-to-r from-purple-500 to-blue-500 text-white"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </form>
         </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </CardContent>
+    </Card>
   )
 }

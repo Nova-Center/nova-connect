@@ -33,7 +33,7 @@ export function ShopList() {
     try {
       setLoading(true)
       console.log("token => " + user?.accessToken)
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/shop-items?page=${currentPage}&per_page=${itemsPerPage}`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/shop-items/no-pagination`, {
         headers : {Authorization : `Bearer ${user?.accessToken}`}
       })
       

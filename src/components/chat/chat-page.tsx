@@ -1,10 +1,30 @@
 import ChatInterface from "@/components/chat/chat-interface"
+import Link from "next/link"
+import { ArrowLeft, Home } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export default function ChatPage() {
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
+          <div className="flex items-center gap-4 mb-4">
+            <Link href="/">
+              <Button variant="outline" size="sm" className="flex items-center gap-2 bg-transparent">
+                <ArrowLeft className="h-4 w-4" />
+                Retour à l'accueil
+              </Button>
+            </Link>
+            <div className="h-6 w-px bg-gray-300"></div>
+            <nav className="flex items-center gap-2 text-sm text-gray-500">
+              <Link href="/" className="hover:text-gray-700 flex items-center gap-1">
+                <Home className="h-4 w-4" />
+                Accueil
+              </Link>
+              <span>•</span>
+              <span className="text-gray-900 font-medium">Messages</span>
+            </nav>
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Messages Nova Connect</h1>
           <p className="text-gray-600">Restez connecté avec votre communauté</p>
         </div>
@@ -16,28 +36,10 @@ export default function ChatPage() {
 
           <div className="space-y-4">
             <div className="bg-white rounded-lg p-4 border">
-              <h3 className="font-semibold text-gray-900 mb-3">Membres actifs</h3>
-              <div className="space-y-2">
-                {[
-                  { name: "Barry Keoghan", status: "En ligne", avatar: "/placeholder.svg?height=32&width=32" },
-                  { name: "margot_robbie", status: "Il y a 5 min", avatar: "/placeholder.svg?height=32&width=32" },
-                  { name: "robert_pattinson", status: "Il y a 1h", avatar: "/placeholder.svg?height=32&width=32" },
-                ].map((member, index) => (
-                  <div key={index} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
-                    <div className="relative">
-                      <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                        {member.name.charAt(0)}
-                      </div>
-                      {index === 0 && (
-                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{member.name}</p>
-                      <p className="text-xs text-gray-500">{member.status}</p>
-                    </div>
-                  </div>
-                ))}
+              <h3 className="font-semibold text-gray-900 mb-3">Statut de connexion</h3>
+              <div className="flex items-center gap-2 text-sm">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span className="text-gray-600">Connecté à l'API</span>
               </div>
             </div>
 
