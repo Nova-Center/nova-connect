@@ -1,3 +1,4 @@
+// components/chat/chat-interface.tsx
 "use client"
 
 import React, { useState, useEffect, useRef } from "react"
@@ -17,6 +18,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Send, MessageCircle, Users } from "lucide-react"
 
+interface Message {
+  id: string
+  content: string
+  senderId: string
+  senderName: string
+  senderAvatar?: string
+  timestamp: string
+  isRead: boolean
+  isOwn: boolean
+}
+
 export default function ChatInterface() {
   const { data: session } = useSession()
   const userId = session?.user?.id
@@ -32,24 +44,60 @@ export default function ChatInterface() {
   const endRef = useRef<HTMLDivElement>(null)
   const socketRef = useRef<Socket | null>(null)
 
-  // Charger l’historique, fallback à [] si 404
+  // helper : formater date ou fallback
+  const fmtTime = (iso: string) => {
+    const d = new Date(iso)
+    if (isNaN(d.getTime())) return "" // pas de date valide
+    return d.toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  }
+
+  // normaliser le payload raw -> Message
+  const normalize = (raw: any): Message => {
+    // timestamp : raw.timestamp, raw.createdAt, raw.created_at, ou now
+    let ts = raw.timestamp || raw.createdAt || raw.created_at
+    ts = ts ? String(ts) : new Date().toISOString()
+
+    // sender champs
+    const sid = String(raw.sender?.id ?? raw.senderId ?? raw.sender_id ?? "")
+    const sname = raw.sender?.name ?? raw.senderName ?? raw.sender_name ?? "Vous"
+    const sav = raw.sender?.avatar ?? raw.senderAvatar ?? raw.sender_avatar
+
+    return {
+      id: String(raw.id),
+      content: String(raw.content),
+      senderId: sid,
+      senderName: sname,
+      senderAvatar: sav,
+      timestamp: ts,
+      isRead: Boolean(raw.is_read ?? raw.isRead),
+      isOwn: String(sid) === String(userId),
+    }
+  }
+
+  // 1️⃣ Charger l’historique REST (GET /conversation), fallback à []
   useEffect(() => {
     if (!token || !otherUserId) return
     axios
-      .get<Message[]>(`${API}/api/v1/messages/conversation/${otherUserId}`, {
+      .get<any[]>(`${API}/api/v1/messages/conversation/${otherUserId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      .then((res) => setMessages(res.data))
+      .then((res) => {
+        const normalized = res.data.map(normalize)
+        setMessages(normalized)
+      })
       .catch((err) => {
         if (axios.isAxiosError(err) && err.response?.status === 404) {
           setMessages([])
         } else {
-          console.error("Erreur GET conversation :", err)
+          console.error("GET conversation error:", err)
         }
       })
   }, [API, token, otherUserId])
 
-  // Récupérer le compteur non-lus
+  // 2️⃣ Charger non-lus
   useEffect(() => {
     if (!token) return
     axios
@@ -57,30 +105,38 @@ export default function ChatInterface() {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((r) => setUnreadCount(r.data.count))
-      .catch((err) => console.error("Erreur unread-count :", err))
+      .catch((err) => console.error("GET unread-count error:", err))
   }, [API, token])
 
-  // WebSocket pour la suite en real-time
+  // 3️⃣ WebSocket real-time
   useEffect(() => {
     if (!userId) return
     const socket = io(WS, { auth: { userId: String(userId) } })
     socketRef.current = socket
 
-    socket.on("private:message", (msg: Message) => {
-      // si sender manquant, on skip
-      if (msg.sender?.id !== otherUserId) return
-      setMessages((m) => [...m, { ...msg, isOwn: false }])
-      setUnreadCount((c) => c + 1)
+    // incoming private message
+    socket.on("private:message", (raw: any) => {
+      const msg = normalize(raw)
+      if (msg.senderId === otherUserId) {
+        setMessages((m) => [...m, msg])
+        setUnreadCount((c) => c + 1)
+      }
     })
 
-    socket.on("private:message:sent", (msg: Message) => {
-      setMessages((m) => [...m, { ...msg, isOwn: true }])
+    // confirmation of sent
+    socket.on("private:message:sent", (raw: any) => {
+      const msg = normalize(raw)
+      setMessages((m) => [...m, msg])
+      setIsLoading(false)       // stop loader ici
+      endRef.current?.scrollIntoView({ behavior: "smooth" })
     })
 
+    // read receipts
     socket.on("private:message:read", ({ readerId }: { readerId: string }) => {
-      if (readerId !== otherUserId) return
-      setMessages((m) => m.map((x) => ({ ...x, isRead: true })))
-      setUnreadCount(0)
+      if (String(readerId) === otherUserId) {
+        setMessages((m) => m.map((x) => ({ ...x, isRead: true })))
+        setUnreadCount(0)
+      }
     })
 
     return () => {
@@ -88,37 +144,31 @@ export default function ChatInterface() {
     }
   }, [WS, userId, otherUserId])
 
-  // scroll auto en bas
+  // scroll auto on messages change
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  // Envoi de message via WS
+  // 4️⃣ Envoyer via WS
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newMessage.trim() || isLoading || !socketRef.current || !otherUserId) return
+    if (!newMessage.trim() || isLoading || !socketRef.current) return
     setIsLoading(true)
     socketRef.current.emit(
       "private:message",
       { receiverId: otherUserId, content: newMessage },
-      () => {
-        setIsLoading(false)
-        setNewMessage("")
+      // ack callback optionnel
+      (ack: any) => {
+        // on peut gérer l’ack si besoin, mais on arrête déjà le loader au 'sent' event
       }
     )
+    setNewMessage("") // on vide tout de suite l’input
   }
 
-  // Marquer comme lu
+  // 5️⃣ Marquer comme lu
   const markAllAsRead = () => {
-    if (!socketRef.current || !otherUserId) return
-    socketRef.current.emit("private:message:read", { senderId: otherUserId })
+    socketRef.current?.emit("private:message:read", { senderId: otherUserId })
   }
-
-  const fmtTime = (ts: string) =>
-    new Date(ts).toLocaleTimeString("fr-FR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })
 
   return (
     <Card className="w-full h-full flex flex-col">
@@ -144,53 +194,53 @@ export default function ChatInterface() {
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-0">
-        {/* liste des messages */}
+        {/* Message list */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-          {messages.map((m) => {
-            const name = m.sender?.name ?? "Utilisateur"
-            const avatar = m.sender?.avatar ?? "/placeholder.svg"
-            return (
+          {messages.map((m) => (
+            <div
+              key={m.id}
+              className={`flex gap-3 ${
+                m.isOwn ? "flex-row-reverse" : "flex-row"
+              }`}
+            >
+              <Avatar className="h-8 w-8 flex-shrink-0">
+                {m.senderAvatar ? (
+                  <AvatarImage src={m.senderAvatar} />
+                ) : (
+                  <AvatarFallback className="bg-gradient-to-r from-purple-400 to-blue-400 text-white text-xs">
+                    {m.senderName.charAt(0)}
+                  </AvatarFallback>
+                )}
+              </Avatar>
               <div
-                key={m.id}
-                className={`flex gap-3 ${
-                  m.isOwn ? "flex-row-reverse" : "flex-row"
+                className={`flex flex-col max-w-[70%] ${
+                  m.isOwn ? "items-end" : "items-start"
                 }`}
               >
-                <Avatar className="h-8 w-8 flex-shrink-0">
-                  <AvatarImage src={avatar} />
-                  <AvatarFallback className="bg-gradient-to-r from-purple-400 to-blue-400 text-white text-xs">
-                    {name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs text-gray-500 font-medium">
+                    {m.senderName}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    {fmtTime(m.timestamp)}
+                  </span>
+                  {!m.isOwn && !m.isRead && (
+                    <div className="w-2 h-2 bg-purple-500 rounded-full" />
+                  )}
+                </div>
                 <div
-                  className={`flex flex-col max-w-[70%] ${
-                    m.isOwn ? "items-end" : "items-start"
+                  className={`px-4 py-2 rounded-2xl ${
+                    m.isOwn
+                      ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white"
+                      : "bg-white border border-gray-200 text-gray-800"
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs text-gray-500 font-medium">
-                      {m.isOwn ? "Vous" : name}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {fmtTime(m.timestamp)}
-                    </span>
-                    {!m.isOwn && !m.isRead && (
-                      <div className="w-2 h-2 bg-purple-500 rounded-full" />
-                    )}
-                  </div>
-                  <div
-                    className={`px-4 py-2 rounded-2xl ${
-                      m.isOwn
-                        ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white"
-                        : "bg-white border border-gray-200 text-gray-800"
-                    }`}
-                  >
-                    {m.content}
-                  </div>
+                  {m.content}
                 </div>
               </div>
-            )
-          })}
+            </div>
+          ))}
+
           {isLoading && (
             <div className="flex gap-3">
               <Avatar className="h-8 w-8">
@@ -205,10 +255,11 @@ export default function ChatInterface() {
               </div>
             </div>
           )}
+
           <div ref={endRef} />
         </div>
 
-        {/* zone de saisie */}
+        {/* Input area */}
         <form
           onSubmit={handleSend}
           className="border-t bg-white p-4 flex items-center gap-2"
