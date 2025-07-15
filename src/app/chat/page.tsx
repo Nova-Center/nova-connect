@@ -2,8 +2,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "../api/auth/[...nextauth]/route"
-
-import ChatPage from "@/components/chat/chat-page"
+import ChatList from "@/components/chat/chat-list"
 
 export default async function EvenementsPage() {
     const session = await getServerSession(authOptions)
@@ -13,7 +12,7 @@ export default async function EvenementsPage() {
         <SidebarProvider>
             <div className="flex min-h-screen w-full">
                 <SidebarInset className="flex-1 bg-zinc-50 dark:bg-zinc-950">
-                    <ChatPage />
+                    <ChatList />
                 </SidebarInset>
             </div>
         </SidebarProvider>
