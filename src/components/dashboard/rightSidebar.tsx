@@ -9,6 +9,7 @@ import { MessageCircle, Search, Users, Crown, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
+import Link from "next/link"
 
 interface User {
   id: number
@@ -183,13 +184,15 @@ export default function ModernRightSidebar() {
                   </div>
 
                   {/* Bouton message avec animation */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-9 w-9 p-0 rounded-xl hover:bg-violet-50 hover:text-violet-600 transition-all duration-300 group-hover:scale-110"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                  </Button>
+                  <Link href={`/chat/${user.id}`}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-9 w-9 p-0 rounded-xl hover:bg-violet-50 hover:text-violet-600 transition-all duration-300 group-hover:scale-110"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
               )
             })}
