@@ -61,7 +61,7 @@ export default function ModernRightSidebar() {
   const sortedUsers = [...filteredUsers].sort((a, b) => b.nova_points - a.nova_points)
 
   return (
-    <aside className="hidden lg:block lg:w-80 xl:w-96 bg-gradient-to-b from-white via-slate-50 to-blue-50 border-l border-gray-200/60 shadow-xl fixed right-0 top-0 h-screen z-10">
+    <aside className="hidden lg:block lg:w-80 xl:w-96  from-white via-slate-50 to-blue-50 border-l border-gray-200/60 shadow-xl fixed right-0 top-0 h-screen z-10">
       <div className="flex h-screen flex-col">
         {/* Header moderne avec logo */}
         <div className="p-6 border-b border-gray-200/60 bg-white/80 backdrop-blur-sm">
