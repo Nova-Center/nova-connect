@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { MessageCircle, Search, Users, Crown, Star, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Card } from "@/components/ui/card"
 import Link from "next/link"
 
 interface User {
@@ -85,13 +84,19 @@ export default function ModernRightSidebar() {
   const sortedUsers = [...filteredUsers].sort((a, b) => b.nova_points - a.nova_points)
 
   return (
-    <aside className="hidden lg:block lg:w-80 xl:w-96 bg-gradient-to-b from-background via-background/95 to-muted/20 dark:from-background dark:via-background/95 dark:to-muted/10 border-l border-border shadow-xl fixed right-0 top-0 h-screen z-10 backdrop-blur-sm">
+    <aside
+      className="hidden lg:block lg:w-80 xl:w-96 
+      bg-gradient-to-b from-background via-background/95 to-muted/20 
+      dark:from-background dark:via-background/95 dark:to-muted/10 
+      border-l border-border shadow-xl fixed right-0 top-0 h-screen z-10 backdrop-blur-sm"
+    >
       <div className="flex h-screen flex-col">
         {/* Header moderne avec logo */}
-        <div className="p-6 border-b border-border bg-card/80 backdrop-blur-sm">
+        <div className="p-6 border-b border-border bg-card/80 backdrop-blur-sm flex-shrink-0">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="relative">
+                {/* Remplacé Image par un div avec icône pour la compatibilité thème */}
                 <div className="h-12 w-12 rounded-2xl shadow-lg ring-2 ring-background bg-gradient-to-r from-violet-500 to-blue-500 flex items-center justify-center">
                   <Users className="h-6 w-6 text-white" />
                 </div>
@@ -116,8 +121,8 @@ export default function ModernRightSidebar() {
           </div>
 
           {/* Barre de recherche moderne */}
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <div className="relative px-6 pb-4">
+            <Search className="absolute left-9 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               placeholder="Rechercher un membre..."
               className="pl-11 pr-4 py-3 bg-muted/50 border-border rounded-2xl focus:bg-background focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all duration-300 text-sm"
@@ -128,7 +133,7 @@ export default function ModernRightSidebar() {
         </div>
 
         {/* Statistiques rapides */}
-        <Card className="mx-6 my-4 p-4 bg-gradient-to-r from-violet-50/80 to-pink-50/80 dark:from-violet-950/30 dark:to-pink-950/30 border-border">
+        <div className="px-6 py-4 bg-gradient-to-r from-violet-50/80 to-pink-50/80 dark:from-violet-950/30 dark:to-pink-950/30 border-b border-border flex-shrink-0">
           <div className="flex items-center justify-between text-sm">
             <div className="text-center">
               <p className="font-bold text-violet-600 dark:text-violet-400 text-lg">{users.length}</p>
@@ -145,7 +150,7 @@ export default function ModernRightSidebar() {
               <p className="text-muted-foreground text-xs">Points total</p>
             </div>
           </div>
-        </Card>
+        </div>
 
         {/* Liste des utilisateurs */}
         <ScrollArea className="flex-1 px-4">
@@ -171,9 +176,11 @@ export default function ModernRightSidebar() {
                 const IconComponent = userLevel.icon
 
                 return (
-                  <Card
+                  <div
                     key={user.id}
-                    className="group relative flex items-center justify-between gap-3 p-4 bg-card/60 hover:bg-card hover:shadow-lg transition-all duration-300 border-border hover:border-violet-200 dark:hover:border-violet-800 hover:scale-[1.02]"
+                    className="group relative flex items-center justify-between gap-3 p-4 rounded-2xl 
+                    bg-card/60 hover:bg-card hover:shadow-lg transition-all duration-300 
+                    border border-border hover:border-violet-200 dark:hover:border-violet-800 hover:scale-[1.02]"
                   >
                     {/* Indicateur de rang pour le top 3 */}
                     {index < 3 && (
@@ -239,7 +246,7 @@ export default function ModernRightSidebar() {
                         <MessageCircle className="h-4 w-4" />
                       </Button>
                     </Link>
-                  </Card>
+                  </div>
                 )
               })
             )}
