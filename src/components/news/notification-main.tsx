@@ -1,3 +1,4 @@
+// components/notification-main.tsx
 "use client"
 
 import React, { useState, useEffect } from "react"
@@ -6,7 +7,6 @@ import { useSession } from "next-auth/react"
 import {
   Bell,
   Check,
-  X,
   Calendar,
   Heart,
   MessageCircle,
@@ -73,7 +73,7 @@ export default function NotificationsMain() {
     }
   }
 
-  // 2️⃣ POST mark-as-read/:id
+  // 2️⃣ mark-as-read individuel
   const markAsRead = async (id: number) => {
     if (!token) return
     try {
@@ -97,7 +97,7 @@ export default function NotificationsMain() {
     }
   }
 
-  // 3️⃣ POST read-all
+  // 3️⃣ mark-all-as-read
   const markAllAsRead = async () => {
     if (!token) return
     try {
@@ -106,9 +106,7 @@ export default function NotificationsMain() {
         null,
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, read: true }))
-      )
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
     } catch (err) {
       console.error("Erreur read-all:", err)
     }
@@ -119,7 +117,6 @@ export default function NotificationsMain() {
   }, [token])
 
   const unreadCount = notifications.filter((n) => !n.read).length
-
   const filtered = notifications.filter((n) =>
     activeTab === "unread"
       ? !n.read
@@ -217,54 +214,35 @@ export default function NotificationsMain() {
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="font-medium text-sm">
-                                {n.title}
-                              </h4>
-                              {!n.read && (
-                                <div className="h-2 w-2 bg-blue-500 rounded-full" />
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-2">
-                              {n.excerpt || n.content}
-                            </p>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground">
-                                {new Date(n.created_at).toLocaleString(
-                                  "fr-FR"
-                                )}
-                              </span>
-                              {getNotificationIcon(n.type)}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-1">
-                            {!n.read && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => markAsRead(n.id)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Check className="h-3 w-3" />
-                              </Button>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                setNotifications((prev) =>
-                                  prev.filter((x) => x.id !== n.id)
-                                )
-                              }
-                              className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-medium text-sm">
+                            {n.title}
+                          </h4>
+                          {!n.read && (
+                            <div className="h-2 w-2 bg-blue-500 rounded-full" />
+                          )}
                         </div>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {n.excerpt || n.content}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(n.created_at).toLocaleString("fr-FR")}
+                          </span>
+                          {getNotificationIcon(n.type)}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {!n.read && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => markAsRead(n.id)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Check className="h-3 w-3" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </CardContent>
