@@ -4,9 +4,11 @@ import { useParams } from "next/navigation"
 import Link from "next/link"
 import ChatInterface from "./chat-interface"
 import { Home, MessageSquare } from "lucide-react"
+import { useSession } from "next-auth/react"
 
 export default function ChatPage() {
-  const { otherUserId } = useParams()
+    const { otherUserId } = useParams()
+    const { data: session } = useSession()
 
   return (
     <div className="h-full flex flex-col max-w-full">

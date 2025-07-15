@@ -1,4 +1,3 @@
-// components/chat/chat-interface.tsx
 "use client"
 
 import React, { useState, useEffect, useRef } from "react"
@@ -37,6 +36,7 @@ export default function ChatInterface() {
   const WS  = process.env.NEXT_PUBLIC_WS_URL!
   const { otherUserId } = useParams()
 
+  const [partnerName, setPartnerName] = useState("Utilisateur")
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -44,26 +44,41 @@ export default function ChatInterface() {
   const endRef = useRef<HTMLDivElement>(null)
   const socketRef = useRef<Socket | null>(null)
 
-  // helper : formater date ou fallback
+  // 1) Charger le nom de l’interlocuteur
+  useEffect(() => {
+    if (!token || !otherUserId) return
+    axios
+      .get<{ username: string; firstName?: string; lastName?: string }>(
+        `${API}/api/v1/users/${otherUserId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      .then((res) => {
+        // préférer prénom + nom si dispo
+        const { username, firstName, lastName } = res.data
+        setPartnerName(
+          firstName && lastName ? `${firstName} ${lastName}` : username
+        )
+      })
+      .catch((err) => console.error("GET partner error:", err))
+  }, [API, token, otherUserId])
+
+  // Helper : formater l’heure
   const fmtTime = (iso: string) => {
     const d = new Date(iso)
-    if (isNaN(d.getTime())) return "" // pas de date valide
+    if (isNaN(d.getTime())) return ""
     return d.toLocaleTimeString("fr-FR", {
       hour: "2-digit",
       minute: "2-digit",
     })
   }
 
-  // normaliser le payload raw -> Message
+  // 2) Normalisation en Message, en utilisant partnerName
   const normalize = (raw: any): Message => {
-    // timestamp : raw.timestamp, raw.createdAt, raw.created_at, ou now
-    let ts = raw.timestamp || raw.createdAt || raw.created_at
-    ts = ts ? String(ts) : new Date().toISOString()
-
-    // sender champs
-    const sid = String(raw.sender?.id ?? raw.senderId ?? raw.sender_id ?? "")
-    const sname = raw.sender?.name ?? raw.senderName ?? raw.sender_name ?? "Vous"
-    const sav = raw.sender?.avatar ?? raw.senderAvatar ?? raw.sender_avatar
+    const sid = String(raw.senderId ?? raw.sender_id ?? "")
+    const isOwn = sid === String(userId)
+    const sname = isOwn ? "Vous" : partnerName
+    const sav = raw.senderAvatar ?? raw.sender_avatar
+    const ts = raw.timestamp ?? raw.createdAt ?? raw.created_at ?? new Date().toISOString()
 
     return {
       id: String(raw.id),
@@ -73,11 +88,11 @@ export default function ChatInterface() {
       senderAvatar: sav,
       timestamp: ts,
       isRead: Boolean(raw.is_read ?? raw.isRead),
-      isOwn: String(sid) === String(userId),
+      isOwn,
     }
   }
 
-  // 1️⃣ Charger l’historique REST (GET /conversation), fallback à []
+  // 3) Charger l’historique (REST)
   useEffect(() => {
     if (!token || !otherUserId) return
     axios
@@ -95,9 +110,9 @@ export default function ChatInterface() {
           console.error("GET conversation error:", err)
         }
       })
-  }, [API, token, otherUserId])
+  }, [API, token, otherUserId, partnerName])
 
-  // 2️⃣ Charger non-lus
+  // 4) Charger le nombre de non-lus
   useEffect(() => {
     if (!token) return
     axios
@@ -108,13 +123,12 @@ export default function ChatInterface() {
       .catch((err) => console.error("GET unread-count error:", err))
   }, [API, token])
 
-  // 3️⃣ WebSocket real-time
+  // 5) WebSocket temps réel
   useEffect(() => {
     if (!userId) return
     const socket = io(WS, { auth: { userId: String(userId) } })
     socketRef.current = socket
 
-    // incoming private message
     socket.on("private:message", (raw: any) => {
       const msg = normalize(raw)
       if (msg.senderId === otherUserId) {
@@ -123,15 +137,13 @@ export default function ChatInterface() {
       }
     })
 
-    // confirmation of sent
     socket.on("private:message:sent", (raw: any) => {
       const msg = normalize(raw)
       setMessages((m) => [...m, msg])
-      setIsLoading(false)       // stop loader ici
+      setIsLoading(false)
       endRef.current?.scrollIntoView({ behavior: "smooth" })
     })
 
-    // read receipts
     socket.on("private:message:read", ({ readerId }: { readerId: string }) => {
       if (String(readerId) === otherUserId) {
         setMessages((m) => m.map((x) => ({ ...x, isRead: true })))
@@ -142,14 +154,14 @@ export default function ChatInterface() {
     return () => {
       socket.disconnect()
     }
-  }, [WS, userId, otherUserId])
+  }, [WS, userId, otherUserId, partnerName])
 
-  // scroll auto on messages change
+  // Scroll automatique
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  // 4️⃣ Envoyer via WS
+  // Envoi via WS
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault()
     if (!newMessage.trim() || isLoading || !socketRef.current) return
@@ -157,15 +169,13 @@ export default function ChatInterface() {
     socketRef.current.emit(
       "private:message",
       { receiverId: otherUserId, content: newMessage },
-      // ack callback optionnel
-      (ack: any) => {
-        // on peut gérer l’ack si besoin, mais on arrête déjà le loader au 'sent' event
-      }
+      // ack callback facultatif
+      () => {}
     )
-    setNewMessage("") // on vide tout de suite l’input
+    setNewMessage("")
   }
 
-  // 5️⃣ Marquer comme lu
+  // Marquer tout comme lu
   const markAllAsRead = () => {
     socketRef.current?.emit("private:message:read", { senderId: otherUserId })
   }
@@ -185,7 +195,8 @@ export default function ChatInterface() {
                 className="bg-white/20 cursor-pointer"
                 onClick={markAllAsRead}
               >
-                {unreadCount} non lu{unreadCount > 1 && "s"}
+                {unreadCount} non lu
+                {unreadCount > 1 && "s"}
               </Badge>
             )}
             <Users className="h-4 w-4" />
@@ -194,7 +205,6 @@ export default function ChatInterface() {
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-0">
-        {/* Message list */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
           {messages.map((m) => (
             <div
@@ -259,7 +269,6 @@ export default function ChatInterface() {
           <div ref={endRef} />
         </div>
 
-        {/* Input area */}
         <form
           onSubmit={handleSend}
           className="border-t bg-white p-4 flex items-center gap-2"
