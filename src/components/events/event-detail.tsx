@@ -184,15 +184,6 @@ export default function EventDetailPage() {
               <CardContent className="p-8">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-gray-900">Participants ({event.participants.length})</h2>
-                  <div className="flex items-center gap-2">
-                    <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-violet-500 to-pink-500 transition-all duration-500"
-                        style={{ width: `${Math.min(participationRate, 100)}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm text-gray-600 font-medium">{Math.round(participationRate)}%</span>
-                  </div>
                 </div>
 
                 {event.participants.length > 0 ? (
