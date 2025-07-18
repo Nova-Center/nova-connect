@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "@/hooks/use-toast"
 import { useSession } from "next-auth/react"
 import axios from "axios"
-import { ShopItemType } from "@/types/shop"
+import { ShopItemType } from "@/types/shop-items"
 
 
 export function ShopList() {
