@@ -336,11 +336,30 @@ export default function ServiceList({
                 {/* Actions */}
                 <div className="flex gap-2 pt-2">
                   {isOwner ? (
+                    // Logique pour le propriétaire du service
                     <>
-                      <Button disabled className="flex-1" variant="secondary">
-                        <Star className="mr-2 h-4 w-4" />
-                        Votre service
-                      </Button>
+                      {service.isExchangeOnly ? (
+                        // Propriétaire, service d'échange uniquement
+                        service.exchange_proposals && service.exchange_proposals.some((p) => p.status === "pending") ? (
+                          // A des propositions en attente : affiche "Propositions en attente" (désactivé)
+                          <Button disabled className="flex-1" variant="secondary">
+                            <Repeat className="mr-2 h-4 w-4" />
+                            Propositions en attente
+                          </Button>
+                        ) : (
+                          // Pas de propositions en attente : permet au propriétaire de définir/modifier l'échange
+                          <Button onClick={() => setSelectedServiceForExchange(service)} className="flex-1">
+                            <Repeat className="mr-2 h-4 w-4" />
+                            Définir/Modifier l'échange
+                          </Button>
+                        )
+                      ) : (
+                        // Propriétaire, pas un service d'échange uniquement : juste "Votre service"
+                        <Button disabled className="flex-1" variant="secondary">
+                          <Star className="mr-2 h-4 w-4" />
+                          Votre service
+                        </Button>
+                      )}
                       <Button
                         onClick={() => handleDeleteService(service.id)}
                         variant="destructive"
@@ -350,7 +369,8 @@ export default function ServiceList({
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </>
-                  ) : isVolunteeredBySomeoneElse ? (
+                  ) : // Logique pour les non-propriétaires
+                  isVolunteeredBySomeoneElse ? (
                     <Button variant="destructive" className="w-full bg-red-500 hover:bg-red-600 text-white" disabled>
                       <UserMinus className="mr-2 h-4 w-4" />
                       Déjà réservé
@@ -361,16 +381,13 @@ export default function ServiceList({
                       Annuler participation
                     </Button>
                   ) : service.isExchangeOnly === true ? (
-                    <Button
-                      disabled // Disable the button as per backend rule
-                      variant="secondary" // Use a secondary variant to indicate disabled state
-                      className="w-full"
-                      title="Vous ne pouvez proposer un échange que pour les services que vous possédez." // Tooltip for explanation
-                    >
+                    // Non-propriétaire, service d'échange uniquement, et disponible : permet de "Réserver l'échange"
+                    <Button onClick={() => handleParticipate(service.id)} className="w-full">
                       <Repeat className="mr-2 h-4 w-4" />
-                      Proposer un échange (Indisponible)
+                      Réserver l'échange
                     </Button>
                   ) : (
+                    // Non-propriétaire, pas un service d'échange uniquement, et disponible : "Participer"
                     <Button onClick={() => handleParticipate(service.id)} className="w-full">
                       <UserPlus className="mr-2 h-4 w-4" />
                       Participer
@@ -414,6 +431,7 @@ export default function ServiceList({
           open={!!selectedServiceForExchange}
           onClose={() => setSelectedServiceForExchange(null)}
           serviceId={selectedServiceForExchange.id}
+          // Note: handleProposeExchange est maintenant utilisé par le propriétaire pour définir son propre échange
           onPropose={handleProposeExchange}
         />
       )}
