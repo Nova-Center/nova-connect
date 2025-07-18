@@ -36,10 +36,10 @@ export default function ProposeExchangeDialog({ open, onClose, serviceId, onProp
     setLoading(true)
     try {
       await onPropose(serviceId, desiredServiceDescription)
-      setDesiredServiceDescription("") // Réinitialiser le champ
-      onClose() // Fermer la modale
+      setDesiredServiceDescription("") // Reset field
+      onClose() // Close modal
     } catch (error) {
-      // Erreur déjà gérée par onPropose (via toast)
+      // Error already handled by onPropose (via toast)
     } finally {
       setLoading(false)
     }

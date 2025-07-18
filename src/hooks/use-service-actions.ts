@@ -19,7 +19,6 @@ export function useServiceActions({ onActionSuccess }: UseServiceActionsProps) {
         toast({ title: "Vous devez être connecté", variant: "destructive" })
         return
       }
-
       try {
         await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/services/${serviceId}/volunteer`,
@@ -40,13 +39,12 @@ export function useServiceActions({ onActionSuccess }: UseServiceActionsProps) {
     [user?.accessToken, onActionSuccess],
   )
 
-  const handleCancelParticipation = useCallback(
+  const handleUnvolunteer = useCallback(
     async (serviceId: number) => {
       if (!user?.accessToken) {
         toast({ title: "Vous devez être connecté", variant: "destructive" })
         return
       }
-
       try {
         await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/services/${serviceId}/unvolunteer`,
@@ -56,7 +54,7 @@ export function useServiceActions({ onActionSuccess }: UseServiceActionsProps) {
         toast({ title: "Participation annulée" })
         onActionSuccess()
       } catch (error: any) {
-        console.error("Erreur annulation:", error.response?.data || error.message)
+        console.error("Erreur annulation participation:", error.response?.data || error.message)
         toast({ title: "Erreur lors de l'annulation", variant: "destructive" })
       }
     },
@@ -69,7 +67,6 @@ export function useServiceActions({ onActionSuccess }: UseServiceActionsProps) {
         toast({ title: "Vous devez être connecté", variant: "destructive" })
         return
       }
-
       if (!confirm("Êtes-vous sûr de vouloir supprimer ce service ?")) return
 
       try {
@@ -92,13 +89,12 @@ export function useServiceActions({ onActionSuccess }: UseServiceActionsProps) {
         toast({ title: "Vous devez être connecté pour proposer un échange", variant: "destructive" })
         return
       }
-
       try {
         await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/services/${serviceId}/propose-exchange`,
           {
+            exchangeServiceId: serviceId, // As per API documentation
             desiredServiceDescription: desiredServiceDescription,
-            exchangeServiceId: serviceId, // Add this line
           },
           { headers: { Authorization: `Bearer ${user.accessToken}` } },
         )
@@ -171,7 +167,7 @@ export function useServiceActions({ onActionSuccess }: UseServiceActionsProps) {
 
   return {
     handleParticipate,
-    handleCancelParticipation,
+    handleUnvolunteer,
     handleDeleteService,
     handleProposeExchange,
     handleAcceptExchange,
