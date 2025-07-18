@@ -194,17 +194,6 @@ export function MainSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-border/40">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild className="h-11 rounded-xl hover:bg-muted/60">
-              <a href="/settings" className="flex items-center gap-3 px-3">
-                <Settings className="h-5 w-5" />
-                <span className="font-medium">Paramètres</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-
         <div className="flex items-center justify-between gap-2 mt-3 px-2">
           <div className="text-xs text-muted-foreground font-mono bg-muted/50 px-2 py-1 rounded">
             ID: {user?.id || "inconnu"}
