@@ -1,4 +1,4 @@
-import { ShopList } from "@/components/shop_items/shop-list";
+import { ShopList } from "@/components/shop/shop-list";
 import { MainSidebar } from "@/components/dashboard/main-sidebar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { getServerSession } from "next-auth";
