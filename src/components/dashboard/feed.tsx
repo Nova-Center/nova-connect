@@ -5,7 +5,6 @@ import Image from "next/image"
 import { useSession } from "next-auth/react"
 import axios from "axios"
 import { mutate } from "swr"
-
 import { API_BASE, usePosts } from "@/hooks/usePosts"
 import type { Post } from "@/types/post"
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
@@ -14,7 +13,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import CommentDialog from "@/components/posts/CommentDialog"
-import { Heart, MessageCircle, Repeat, Share, MoreHorizontal, AlertCircle } from "lucide-react"
+import { Heart, MessageCircle, Download, MoreHorizontal, AlertCircle } from "lucide-react"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 
 export function Feed() {
@@ -49,7 +48,7 @@ export function Feed() {
           headers: { Authorization: `Bearer ${token}` },
         },
       )
-      await mutate(`${API_BASE}/api/v1/posts/no-pagination`)
+      await mutate(`${API_BASE}/api/v1/posts`)
     } catch (err) {
       console.error("Erreur like/unlike :", err)
     }
@@ -68,6 +67,48 @@ export function Feed() {
       await mutate(`${API_BASE}/api/v1/posts`)
     } catch (err) {
       console.error("Erreur suppression :", err)
+    }
+  }
+
+  const handleDownload = async (post: Post) => {
+    try {
+      if (post.image) {
+        // Télécharger l'image
+        const response = await fetch(post.image)
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = url
+
+        // Extraire l'extension du fichier ou utiliser jpg par défaut
+        const extension = post.image.split(".").pop()?.toLowerCase() || "jpg"
+        const fileName = `post-${post.id}-image.${extension}`
+
+        link.download = fileName
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      } else {
+        // Télécharger le contenu du post en tant que fichier texte
+        const content = `Post de ${post.user?.firstName} ${post.user?.lastName} (@${post.user?.username})
+Date: ${new Date(post.createdAt).toLocaleString("fr-FR")}
+
+${typeof post.content === "string" ? post.content : JSON.stringify(post.content, null, 2)}`
+
+        const blob = new Blob([content], { type: "text/plain;charset=utf-8" })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement("a")
+        link.href = url
+        link.download = `post-${post.id}.txt`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      }
+    } catch (error) {
+      console.error("Erreur lors du téléchargement:", error)
+      alert("Erreur lors du téléchargement du fichier")
     }
   }
 
@@ -100,7 +141,6 @@ export function Feed() {
           </h1>
           <p className="text-muted-foreground text-lg">Découvrez ce que partagent vos amis</p>
         </header>
-
         <div className="space-y-6">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="overflow-hidden border-2 border-blue-100">
@@ -145,7 +185,6 @@ export function Feed() {
           </h1>
           <p className="text-muted-foreground text-lg">Découvrez ce que partagent vos amis</p>
         </header>
-
         <div className="bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-12 text-center">
           <div className="text-6xl mb-6">📭</div>
           <h3 className="text-2xl font-bold mb-4 text-blue-900">Aucun post pour l'instant</h3>
@@ -163,7 +202,6 @@ export function Feed() {
         </h1>
         <p className="text-muted-foreground text-lg">Découvrez ce que partagent vos amis</p>
       </header>
-
       <div className="space-y-8">
         {posts.map((post: Post) => (
           <Card
@@ -217,7 +255,6 @@ export function Feed() {
                 )}
               </div>
             </CardHeader>
-
             <CardContent className="p-6">
               {typeof post.content === "string" ? (
                 <p className="mb-6 text-lg leading-relaxed whitespace-pre-line">{post.content}</p>
@@ -238,9 +275,7 @@ export function Feed() {
                 </div>
               )}
             </CardContent>
-
             <Separator className="bg-gradient-to-r from-blue-200 to-purple-200 h-0.5" />
-
             <CardFooter className="p-4">
               <div className="flex justify-between w-full">
                 <Button
@@ -272,19 +307,17 @@ export function Feed() {
                 <Button
                   variant="ghost"
                   size="lg"
-                  className="flex items-center gap-3 text-base rounded-full px-6 py-3 hover:bg-green-50"
+                  className="rounded-full p-3 h-12 w-12 hover:bg-green-50"
+                  onClick={() => handleDownload(post)}
+                  title={post.image ? "Télécharger l'image" : "Télécharger le contenu"}
                 >
-                  <Repeat className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="lg" className="rounded-full p-3 h-12 w-12 hover:bg-purple-50">
-                  <Share className="h-5 w-5" />
+                  <Download className="h-5 w-5" />
                 </Button>
               </div>
             </CardFooter>
           </Card>
         ))}
       </div>
-
       {selectedPostId && (
         <CommentDialog postId={selectedPostId} open={!!selectedPostId} onClose={() => setSelectedPostId(null)} />
       )}
