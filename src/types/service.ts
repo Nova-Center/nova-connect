@@ -3,14 +3,15 @@ export interface Service {
   title: string
   description: string
   date: string // API returns date as a string (e.g., "2025-07-08T00:00:00.000Z")
-  owner_id: number
+  ownerId: number // Changed from owner_id to ownerId
   owner_name?: string // Assuming API might provide owner's name/username
-  volunteer_id?: number | null // Null if no volunteer, ID if volunteered
-  exchange_service_id?: number | null // ID of the service offered in exchange, if applicable
-  desired_service_description?: string | null // Description of desired exchange service
-  is_exchange_only: boolean
-  created_at: string
-  updated_at: string
+  volunteerId?: number | null // Changed from volunteer_id to volunteerId
+  exchangeServiceId?: number | null // Changed from exchange_service_id to exchangeServiceId
+  desiredServiceDescription?: string | null // Already camelCase, keeping as is
+  isExchangeOnly: boolean // Changed from is_exchange_only to isExchangeOnly
+  createdAt: string // Changed from created_at to createdAt
+  updatedAt: string // Changed from updated_at to updatedAt
+  // exchange_proposals might be part of detailed service fetch, not list
   exchange_proposals?: Array<{ id: number; proposer_id: number; proposer_name?: string; status: string }>
 }
 

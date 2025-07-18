@@ -7,12 +7,25 @@ import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "@/hooks/use-toast"
-import { CalendarDays, Star, Trash2, UserPlus, UserMinus, Crown, Repeat, ChevronLeft, ChevronRight } from "lucide-react"
+import {
+  CalendarDays,
+  Star,
+  Trash2,
+  UserPlus,
+  UserMinus,
+  Crown,
+  Repeat,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle,
+  XCircle,
+  Info,
+} from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import ProposeExchangeDialog from "@/components/services/propose-exchange-dialog"
 import { useServiceActions } from "@/hooks/use-service-actions"
-import { Service, ServicesApiResponse } from "@/types/service"
+import type { Service, ServicesApiResponse } from "@/types/service"
 
 interface ServiceListProps {
   searchQuery?: string
@@ -20,7 +33,7 @@ interface ServiceListProps {
   currentPage: number
   itemsPerPage: number
   onPageChange: (page: number) => void
-  setTotalServices: (total: number) => void // Callback to update total services in parent
+  setTotalServices: (total: number) => void
 }
 
 export default function ServiceList({
@@ -38,19 +51,6 @@ export default function ServiceList({
   const [loading, setLoading] = useState(false)
   const [selectedServiceForExchange, setSelectedServiceForExchange] = useState<Service | null>(null)
   const [totalPages, setTotalPages] = useState(1)
-
-  const handleActionSuccess = useCallback(() => {
-    fetchServices() // Refresh services after any action
-  }, [])
-
-  const {
-    handleParticipate,
-    handleUnvolunteer,
-    handleDeleteService,
-    handleProposeExchange,
-    handleAcceptExchange,
-    handleCancelExchange,
-  } = useServiceActions({ onActionSuccess: handleActionSuccess })
 
   const fetchServices = useCallback(async () => {
     if (session.status !== "authenticated" || !user?.accessToken) {
@@ -74,6 +74,24 @@ export default function ServiceList({
       setServices(servicesData)
       setTotalServices(meta.total)
       setTotalPages(meta.lastPage)
+
+      // --- DEBUG LOGS START ---
+      console.log("--- ServiceList Fetch Debug ---")
+      console.log("Current User ID:", user?.id)
+      servicesData.forEach((service) => {
+        console.log(
+          `Service ID: ${service.id}, Title: "${service.title}", Owner ID: ${service.ownerId}, Volunteer ID: ${service.volunteerId}, Is Exchange Only: ${service.isExchangeOnly}`,
+        )
+        const isOwner = typeof service.ownerId === "number" && service.ownerId === user?.id
+        const isVolunteeredBySomeoneElse =
+          typeof service.volunteerId === "number" && service.volunteerId !== null && service.volunteerId !== user?.id
+        const isVolunteeredByMe = typeof service.volunteerId === "number" && service.volunteerId === user?.id
+        console.log(
+          `  Calculated: isOwner=${isOwner}, isVolunteeredBySomeoneElse=${isVolunteeredBySomeoneElse}, isVolunteeredByMe=${isVolunteeredByMe}`,
+        )
+      })
+      console.log("--- Debug End ---")
+      // --- DEBUG LOGS END ---
     } catch (error) {
       console.error("Erreur lors du chargement des services:", error)
       toast({ title: "Erreur lors du chargement des services", variant: "destructive" })
@@ -81,6 +99,19 @@ export default function ServiceList({
       setLoading(false)
     }
   }, [user?.accessToken, session.status, currentPage, itemsPerPage, setTotalServices])
+
+  const handleActionSuccess = useCallback(() => {
+    fetchServices()
+  }, [fetchServices])
+
+  const {
+    handleParticipate,
+    handleUnvolunteer,
+    handleDeleteService,
+    handleProposeExchange,
+    handleAcceptExchange,
+    handleCancelExchange,
+  } = useServiceActions({ onActionSuccess: handleActionSuccess })
 
   useEffect(() => {
     fetchServices()
@@ -160,9 +191,10 @@ export default function ServiceList({
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredServices.map((service) => {
-          const isOwner = service.owner_id === user?.id
-          const isVolunteeredBySomeoneElse = service.volunteer_id !== null && service.volunteer_id !== user?.id
-          const isVolunteeredByMe = service.volunteer_id === user?.id
+          const isOwner = typeof service.ownerId === "number" && service.ownerId === user?.id
+          const isVolunteeredBySomeoneElse =
+            typeof service.volunteerId === "number" && service.volunteerId !== null && service.volunteerId !== user?.id
+          const isVolunteeredByMe = typeof service.volunteerId === "number" && service.volunteerId === user?.id
 
           const serviceDate = new Date(service.date).toLocaleDateString("fr-FR")
 
@@ -172,9 +204,9 @@ export default function ServiceList({
               className={cn(
                 "group hover:shadow-lg transition-all duration-300 border border-gray-200 dark:border-gray-700 hover:border-primary/20 dark:hover:border-primary/50 bg-white dark:bg-slate-800",
                 {
-                  "opacity-70 grayscale pointer-events-none": isVolunteeredBySomeoneElse, // Visually disable if taken by someone else
+                  "opacity-70 grayscale pointer-events-none": isVolunteeredBySomeoneElse,
                   "border-purple-400 dark:border-purple-600 ring-2 ring-purple-200 dark:ring-purple-800":
-                    service.is_exchange_only, // Emphasize exchange services
+                    service.isExchangeOnly === true,
                 },
               )}
             >
@@ -202,7 +234,7 @@ export default function ServiceList({
                           ✓ Votre participation
                         </Badge>
                       )}
-                      {service.is_exchange_only && (
+                      {service.isExchangeOnly === true && (
                         <Badge className="bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700 shrink-0">
                           <Repeat className="h-3 w-3 mr-1" />
                           Échange
@@ -229,9 +261,9 @@ export default function ServiceList({
                 {/* Description */}
                 <div className="bg-muted/30 dark:bg-slate-700/30 rounded-lg p-4">
                   <p className="text-sm text-muted-foreground line-clamp-3">{service.description}</p>
-                  {service.is_exchange_only && service.desired_service_description && (
+                  {service.isExchangeOnly === true && service.desiredServiceDescription && (
                     <p className="text-xs text-purple-700 dark:text-purple-300 mt-2 italic">
-                      Recherche en échange : {service.desired_service_description}
+                      Recherche en échange : {service.desiredServiceDescription}
                     </p>
                   )}
                 </div>
@@ -241,6 +273,65 @@ export default function ServiceList({
                   <CalendarDays className="w-4 h-4" />
                   <span className="font-medium">{serviceDate}</span>
                 </div>
+
+                {/* Exchange Proposals Section (for owner) */}
+                {isOwner && service.exchange_proposals && service.exchange_proposals.length > 0 && (
+                  <div className="space-y-3 pt-4 border-t border-muted-foreground/20 mt-4">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <Info className="h-4 w-4 text-blue-500" />
+                      Propositions d'échange ({service.exchange_proposals.length})
+                    </div>
+                    <div className="space-y-2">
+                      {service.exchange_proposals.map((proposal) => (
+                        <div
+                          key={proposal.id}
+                          className="flex items-center justify-between p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-200/50 dark:border-blue-800/20"
+                        >
+                          <div className="flex-1 text-sm text-blue-800 dark:text-blue-200">
+                            <span className="font-medium">{proposal.proposer_name || "Utilisateur inconnu"}</span>{" "}
+                            propose un échange.
+                          </div>
+                          <div className="flex gap-2 ml-4">
+                            {proposal.status === "pending" && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleAcceptExchange(service.id, proposal.id)}
+                                className="h-8 px-3 text-xs bg-green-500 hover:bg-green-600 text-white"
+                              >
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                Accepter
+                              </Button>
+                            )}
+                            {proposal.status === "accepted" && (
+                              <Badge className="bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700">
+                                Accepté
+                              </Badge>
+                            )}
+                            {proposal.status === "rejected" && (
+                              <Badge
+                                variant="destructive"
+                                className="bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-700"
+                              >
+                                Refusé
+                              </Badge>
+                            )}
+                            {proposal.status === "pending" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleCancelExchange(service.id, proposal.id)}
+                                className="h-8 px-3 text-xs text-red-600 border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-700 dark:hover:bg-red-900/20"
+                              >
+                                <XCircle className="h-3 w-3 mr-1" />
+                                Refuser
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-2">
@@ -269,10 +360,15 @@ export default function ServiceList({
                       <UserMinus className="mr-2 h-4 w-4" />
                       Annuler participation
                     </Button>
-                  ) : service.is_exchange_only ? (
-                    <Button onClick={() => setSelectedServiceForExchange(service)} className="w-full">
+                  ) : service.isExchangeOnly === true ? (
+                    <Button
+                      disabled // Disable the button as per backend rule
+                      variant="secondary" // Use a secondary variant to indicate disabled state
+                      className="w-full"
+                      title="Vous ne pouvez proposer un échange que pour les services que vous possédez." // Tooltip for explanation
+                    >
                       <Repeat className="mr-2 h-4 w-4" />
-                      Proposer un échange
+                      Proposer un échange (Indisponible)
                     </Button>
                   ) : (
                     <Button onClick={() => handleParticipate(service.id)} className="w-full">

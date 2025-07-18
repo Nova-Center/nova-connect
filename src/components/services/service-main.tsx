@@ -9,7 +9,7 @@ import CreateServiceForm from "@/components/services/create-service"
 import ServiceList from "@/components/services/service-list"
 import axios from "axios"
 import { useSession } from "next-auth/react"
-import { ServicesApiResponse } from "@/types/service"
+import type { ServicesApiResponse } from "@/types/service"
 
 export default function ServiceMain() {
   const session = useSession()
@@ -59,8 +59,8 @@ export default function ServiceMain() {
       let servicesThisWeek = 0
 
       servicesData.forEach((service: any) => {
-        // Only count if volunteer_id is present
-        if (service.volunteer_id) {
+        // Only count if volunteerId is present and not null
+        if (typeof service.volunteerId === "number" && service.volunteerId !== null) {
           totalParticipants++
         }
         const serviceDate = new Date(service.date)
@@ -185,7 +185,7 @@ export default function ServiceMain() {
           currentPage={currentPage}
           itemsPerPage={itemsPerPage}
           onPageChange={handlePageChange}
-          setTotalServices={setTotalServices} // Pass the setter for total services
+          setTotalServices={setTotalServices}
         />
       </div>
     </div>
