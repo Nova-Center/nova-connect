@@ -49,7 +49,7 @@ export function Feed() {
           headers: { Authorization: `Bearer ${token}` },
         },
       )
-      await mutate(`${API_BASE}/api/v1/posts`)
+      await mutate(`${API_BASE}/api/v1/posts/no-pagination`)
     } catch (err) {
       console.error("Erreur like/unlike :", err)
     }

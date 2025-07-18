@@ -1,159 +1,215 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import axios from "axios"
 import { useSession } from "next-auth/react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { toast } from "@/hooks/use-toast"
-import { Calendar, FileText, Type, Sparkles } from "lucide-react"
 import { Label } from "@/components/ui/label"
+import { toast } from "@/hooks/use-toast"
+import { Calendar, FileText, Type, Sparkles, Repeat } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
 
-export default function CreateServiceForm({ onCreated }: { onCreated?: () => void }) {
-  const { data: session } = useSession()
-  const user = session?.user
+interface CreateServiceProps {
+  onCreated: () => void
+}
 
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [date, setDate] = useState("")
+export default function CreateServiceForm({ onCreated }: CreateServiceProps) {
+  const { data: session, status } = useSession()
+  const token = session?.user?.accessToken
+
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    date: "",
+    isExchangeOnly: false,
+    desiredServiceDescription: "",
+  })
   const [loading, setLoading] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!title || !description || !date) {
-      toast({ title: "Tous les champs sont requis", variant: "destructive" })
-      return
-    }
-
-    // Vérifier que la date n'est pas dans le passé
-    const selectedDate = new Date(date)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-
-    if (selectedDate < today) {
-      toast({ title: "La date ne peut pas être dans le passé", variant: "destructive" })
-      return
-    }
-
-    setLoading(true)
-    try {
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/services`,
-        { title, description, date },
-        {
-          headers: {
-            Authorization: `Bearer ${user?.accessToken}`,
-            "Content-Type": "application/json",
-          },
-        },
-      )
-      toast({
-        title: "Service créé avec succès ! 🎉",
-        description: "Votre service est maintenant visible par la communauté",
-      })
-      setTitle("")
-      setDescription("")
-      setDate("")
-      onCreated?.()
-    } catch (error: any) {
-      toast({
-        title: "Erreur lors de la création du service",
-        description: error.response?.data?.message || "Une erreur inattendue s'est produite",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const today = new Date().toISOString().split("T")[0]
 
+  const handleChange = useCallback(
+    (field: keyof typeof formData, value: string | boolean) => {
+      setFormData((prev) => ({ ...prev, [field]: value }))
+    },
+    []
+  )
+
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
+      const { title, description, date, isExchangeOnly, desiredServiceDescription } = formData
+
+      if (!title || !description || !date) {
+        toast({ title: "Tous les champs requis (Titre, Description, Date) sont obligatoires", variant: "destructive" })
+        return
+      }
+      if (isExchangeOnly && !desiredServiceDescription) {
+        toast({ title: "Veuillez décrire le service désiré pour un échange", variant: "destructive" })
+        return
+      }
+      if (!token) {
+        toast({ title: "Vous devez être connecté", variant: "destructive" })
+        return
+      }
+      if (new Date(date) < new Date(today)) {
+        toast({ title: "La date ne peut pas être dans le passé", variant: "destructive" })
+        return
+      }
+
+      setLoading(true)
+      try {
+        const payload: Record<string, any> = {
+          title,
+          description,
+          date: new Date(date).getTime(),
+        }
+        if (isExchangeOnly) {
+          payload.isExchangeOnly = true
+          payload.desiredServiceDescription = desiredServiceDescription
+        }
+
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/services`,
+          payload,
+          { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
+        )
+
+        toast({ title: "Service créé avec succès ! 🎉" })
+        setFormData({ title: "", description: "", date: "", isExchangeOnly: false, desiredServiceDescription: "" })
+        onCreated()
+      } catch (error: any) {
+        console.error("Erreur création service:", error.response?.data || error.message)
+        toast({
+          title: "Erreur lors de la création",
+          description: error.response?.data?.message || "Une erreur est survenue",
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
+    },
+    [formData, token, today, onCreated]
+  )
+
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
+      </div>
+    )
+  }
+  if (status === "unauthenticated" || !token) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-muted-foreground">Vous devez être connecté pour créer un service</p>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="bg-gradient-to-br from-primary/5 via-primary/3 to-transparent rounded-2xl p-8 border border-primary/10">
+      <div className="bg-gradient-to-br from-primary/5 to-primary/3 rounded-2xl p-8 border border-primary/10">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl mb-4">
             <Sparkles className="h-8 w-8 text-primary-foreground" />
           </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            Proposer un service
-          </h2>
-          <p className="text-muted-foreground mt-2">Partagez vos compétences avec la communauté</p>
+          <h2 className="text-2xl font-bold text-primary mb-2">Proposer un service</h2>
+          <p className="text-muted-foreground">Partagez vos compétences avec la communauté</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="title" className="text-sm font-semibold flex items-center gap-2">
-              <Type className="h-4 w-4 text-primary" />
-              Titre du service
+            <Label htmlFor="title" className="flex items-center gap-2 font-semibold">
+              <Type className="h-4 w-4 text-primary" /> Titre du service
             </Label>
             <Input
               id="title"
-              placeholder="Ex: Cours de guitare, Aide au jardinage, Réparation vélo..."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="h-12 bg-background/50 border-border/40 focus:border-primary/40 focus:ring-primary/20"
+              value={formData.title}
+              onChange={(e) => handleChange("title", e.target.value)}
+              placeholder="Ex: Cours de guitare..."
               maxLength={100}
+              className="h-12"
             />
-            <div className="text-xs text-muted-foreground text-right">{title.length}/100 caractères</div>
+            <div className="text-xs text-muted-foreground text-right">{formData.title.length}/100</div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-semibold flex items-center gap-2">
-              <FileText className="h-4 w-4 text-primary" />
-              Description détaillée
+            <Label htmlFor="description" className="flex items-center gap-2 font-semibold">
+              <FileText className="h-4 w-4 text-primary" /> Description détaillée
             </Label>
             <Textarea
               id="description"
-              placeholder="Décrivez votre service en détail : ce que vous proposez, les prérequis, le matériel nécessaire..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={formData.description}
+              onChange={(e) => handleChange("description", e.target.value)}
+              placeholder="Décrivez votre service..."
               rows={5}
-              className="bg-background/50 border-border/40 focus:border-primary/40 focus:ring-primary/20 resize-none"
               maxLength={500}
             />
-            <div className="text-xs text-muted-foreground text-right">{description.length}/500 caractères</div>
+            <div className="text-xs text-muted-foreground text-right">{formData.description.length}/500</div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="date" className="text-sm font-semibold flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-primary" />
-              Date prévue
+            <Label htmlFor="date" className="flex items-center gap-2 font-semibold">
+              <Calendar className="h-4 w-4 text-primary" /> Date prévue
             </Label>
             <Input
               id="date"
               type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+              value={formData.date}
+              onChange={(e) => handleChange("date", e.target.value)}
               min={today}
-              className="h-12 bg-background/50 border-border/40 focus:border-primary/40 focus:ring-primary/20"
+              className="h-12"
             />
           </div>
 
-          <div className="flex gap-3 pt-4">
-            <Button
-              type="submit"
-              disabled={loading || !title || !description || !date}
-              className="flex-1 h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground border-0 shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
-            >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground mr-2"></div>
-                  Création en cours...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Proposer le service
-                </>
-              )}
-            </Button>
+          <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isExchangeOnly"
+                checked={formData.isExchangeOnly}
+                onCheckedChange={(c) => handleChange("isExchangeOnly", c as boolean)}
+              />
+              <Label htmlFor="isExchangeOnly" className="flex items-center gap-2 font-semibold">
+                <Repeat className="h-4 w-4 text-primary" /> Échange uniquement
+              </Label>
+            </div>
+            {formData.isExchangeOnly && (
+              <div className="space-y-2">
+                <Label htmlFor="desiredServiceDescription" className="flex items-center gap-2 font-semibold">
+                  <FileText className="h-4 w-4 text-primary" /> Service désiré en échange
+                </Label>
+                <Textarea
+                  id="desiredServiceDescription"
+                  value={formData.desiredServiceDescription}
+                  onChange={(e) => handleChange("desiredServiceDescription", e.target.value)}
+                  rows={3}
+                  maxLength={300}
+                />
+                <div className="text-xs text-muted-foreground text-right">
+                  {formData.desiredServiceDescription.length}/300
+                </div>
+              </div>
+            )}
           </div>
+
+          <Button
+            type="submit"
+            disabled={
+              loading ||
+              !formData.title ||
+              !formData.description ||
+              !formData.date ||
+              (formData.isExchangeOnly && !formData.desiredServiceDescription)
+            }
+            className="w-full h-12 bg-gradient-to-r from-primary to-primary/80"
+          >
+            {loading ? "Création en cours…" : "Proposer le service"}
+          </Button>
         </form>
       </div>
     </div>
-  )
+)
 }

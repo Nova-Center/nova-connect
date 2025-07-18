@@ -21,9 +21,9 @@ export function ShopList() {
   const [searchTerm, setSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
+  const itemsPerPage = 12
   const session = useSession()
   const user = session?.data?.user
-  const itemsPerPage = 12
 
   useEffect(() => {
     fetchItems()
