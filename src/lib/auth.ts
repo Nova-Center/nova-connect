@@ -13,7 +13,7 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         try {
           const loginResponse = await axios.post(
-            "http://localhost:3333/api/v1/auth/login",
+            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/login`,
             credentials
           );
           const token = loginResponse.data.token;
@@ -24,7 +24,7 @@ export const authOptions: AuthOptions = {
           }
 
           const userResponse = await axios.get(
-            "http://localhost:3333/api/v1/me",
+            `${process.env.NEXT_PUBLIC_API_URL}/api/v1/me`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
