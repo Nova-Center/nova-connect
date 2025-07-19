@@ -266,7 +266,7 @@ ${typeof post.content === "string" ? post.content : JSON.stringify(post.content,
               {post.image && (
                 <div className="rounded-2xl overflow-hidden mb-4 border-2 border-gray-200 shadow-lg">
                   <Image
-                    src={post.image || "/placeholder-post.svg"}
+                    src={post.image || "/placeholder.svg"}
                     alt="Contenu du post"
                     width={600}
                     height={300}

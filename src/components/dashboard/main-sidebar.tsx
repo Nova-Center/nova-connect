@@ -4,7 +4,7 @@ import { useSession, signOut } from "next-auth/react"
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import axios from "axios"
-import { Home, Bell, Users, Calendar, Settings, LogOut, ShoppingBag, Zap } from "lucide-react"
+import { Home, Bell, Users, Calendar, LogOut, ShoppingBag, Zap, Crown, Star } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -32,6 +32,30 @@ const navigationItems = [
   { icon: Calendar, label: "Événements", href: "/event" },
   { icon: ShoppingBag, label: "Shop", href: "/shop" },
 ]
+
+// Helper function pour déterminer le niveau
+const getUserLevel = (points: number) => {
+  if (points >= 2000) return { level: "Expert", color: "from-purple-500 to-pink-500", icon: Crown }
+  if (points >= 1000) return { level: "Avancé", color: "from-blue-500 to-cyan-500", icon: Star }
+  if (points >= 500) return { level: "Intermédiaire", color: "from-green-500 to-emerald-500", icon: Users }
+  return { level: "Débutant", color: "from-gray-500 to-slate-500", icon: Users }
+}
+
+// Helper function pour calculer les points nécessaires pour le niveau suivant
+const getPointsToNextLevel = (points: number) => {
+  if (points < 500) return 500 - points
+  if (points < 1000) return 1000 - points
+  if (points < 2000) return 2000 - points
+  return 0 // Niveau maximum atteint
+}
+
+// Helper function pour calculer le pourcentage de progression
+const getLevelProgress = (points: number) => {
+  if (points < 500) return (points / 500) * 100
+  if (points < 1000) return ((points - 500) / 500) * 100
+  if (points < 2000) return ((points - 1000) / 1000) * 100
+  return 100 // Niveau maximum
+}
 
 export function MainSidebar() {
   const { data: session } = useSession()
@@ -79,8 +103,11 @@ export function MainSidebar() {
       .catch(() => setRank("N/A"))
   }, [user?.accessToken])
 
-  const currentLevel = Math.floor((points ?? 0) / 100) + 1
-  const progressToNext = (points ?? 0) % 100
+  const currentPoints = points ?? 0
+  const userLevel = getUserLevel(currentPoints)
+  const pointsToNext = getPointsToNextLevel(currentPoints)
+  const progressPercentage = getLevelProgress(currentPoints)
+  const LevelIcon = userLevel.icon
 
   return (
     <Sidebar className="w-80 border-r border-border/40 bg-gradient-to-b from-background to-muted/20">
@@ -172,20 +199,23 @@ export function MainSidebar() {
               <div className="space-y-3 bg-muted/30 rounded-xl p-4 border border-border/40">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground font-medium">Niveau actuel</span>
-                  <span className="font-semibold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                    Niveau {currentLevel}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <LevelIcon className="h-4 w-4" />
+                    <span className={`font-semibold bg-gradient-to-r ${userLevel.color} bg-clip-text text-transparent`}>
+                      {userLevel.level}
+                    </span>
+                  </div>
                 </div>
                 <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
                   <div
-                    className="bg-gradient-to-r from-primary to-primary/80 h-3 rounded-full transition-all duration-500 ease-out relative overflow-hidden"
-                    style={{ width: `${progressToNext}%` }}
+                    className={`bg-gradient-to-r ${userLevel.color} h-3 rounded-full transition-all duration-500 ease-out relative overflow-hidden`}
+                    style={{ width: `${progressPercentage}%` }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
                   </div>
                 </div>
                 <div className="text-xs text-muted-foreground text-center font-medium">
-                  {100 - progressToNext} points pour le niveau suivant
+                  {pointsToNext > 0 ? `${pointsToNext} points pour le niveau suivant` : "Niveau maximum atteint ! 🎉"}
                 </div>
               </div>
             </div>
