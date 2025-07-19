@@ -147,7 +147,7 @@ export function LoginForm() {
         <div className="text-center text-sm text-gray-500">
           Don't have an account?{" "}
           <Link
-            href={`${process.env.NEXT_PUBLIC_APP_URL}/auth/register`}
+            href={"/auth/register"}
             className="font-medium text-teal-600 hover:text-teal-500"
           >
             Sign up
