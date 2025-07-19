@@ -17,6 +17,10 @@ const nextConfig = {
         port: "", // Pas de port spécifique pour Unsplash
         pathname: "/**",
       },
+      {
+        hostname: "bucket-production-3fe3.up.railway.app",
+        protocol: "https",
+      },
     ],
   },
 };
