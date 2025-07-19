@@ -1,14 +1,14 @@
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { getServerSession } from "next-auth"
-import { redirect } from "next/navigation"
-import { authOptions } from "../../api/auth/[...nextauth]/route"
-import ChatPage from "@/components/chat/chat-page"
-import { MainSidebar } from "@/components/dashboard/main-sidebar"
-import RightSidebar from "@/components/dashboard/rightSidebar"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+import { authOptions } from "@/lib/auth";
+import ChatPage from "@/components/chat/chat-page";
+import { MainSidebar } from "@/components/dashboard/main-sidebar";
+import RightSidebar from "@/components/dashboard/rightSidebar";
 
 export default async function OneToOnePage() {
-  const session = await getServerSession(authOptions)
-  if (!session) redirect("/auth/login")
+  const session = await getServerSession(authOptions);
+  if (!session) redirect("/auth/login");
 
   return (
     <SidebarProvider>
@@ -31,5 +31,5 @@ export default async function OneToOnePage() {
         </div>
       </div>
     </SidebarProvider>
-  )
+  );
 }

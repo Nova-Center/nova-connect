@@ -1,16 +1,15 @@
-
-import { MainSidebar } from "@/components/dashboard/main-sidebar"
-import EventList from "@/components/events/event-list"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { getServerSession } from "next-auth"
-import { redirect } from "next/navigation"
-import { authOptions } from "../api/auth/[...nextauth]/route"
+import { MainSidebar } from "@/components/dashboard/main-sidebar";
+import EventList from "@/components/events/event-list";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+import { authOptions } from "@/lib/auth";
 
 export default async function EvenementsPage() {
-    const session = await getServerSession(authOptions)
-    if (!session) redirect("/auth/login")
-  
-   return (
+  const session = await getServerSession(authOptions);
+  if (!session) redirect("/auth/login");
+
+  return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <MainSidebar />
@@ -19,5 +18,5 @@ export default async function EvenementsPage() {
         </SidebarInset>
       </div>
     </SidebarProvider>
-  )
+  );
 }
