@@ -185,7 +185,7 @@ export function MainSidebar() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton className="cursor-pointer">
-                  <a href="https://github.com/Nova-Center/nova-scrape/releases/download/release/app.jar">
+                  <a href="https://github.com/Nova-Center/nova-scrape/releases/download/release/NovaScrape-1.0.jar">
                     <FaJava className="text-black" />
                   </a>
                 </SidebarMenuButton>
