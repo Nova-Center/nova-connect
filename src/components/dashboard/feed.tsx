@@ -213,7 +213,7 @@ ${typeof post.content === "string" ? post.content : JSON.stringify(post.content,
                 <div className="flex items-center gap-4">
                   <Avatar className="h-14 w-14 ring-4 ring-blue-200 ring-offset-2">
                     <AvatarImage
-                      src={post.user?.avatar || "/placeholder.svg?height=56&width=56"}
+                      src={post.user?.avatar || post.user?.firstName }
                       alt={post.user?.firstName || "Avatar"}
                     />
                     <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-bold text-lg">
