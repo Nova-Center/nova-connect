@@ -1,18 +1,24 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { Eye, EyeOff } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import Image from "next/image"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
-
+import { useState } from "react";
+import Link from "next/link";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Eye, EyeOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import Image from "next/image";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -21,11 +27,11 @@ const formSchema = z.object({
   password: z.string().min(1, {
     message: "Password is required.",
   }),
-})
+});
 
 export function LoginForm() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -33,27 +39,27 @@ export function LoginForm() {
       email: "",
       password: "",
     },
-  })
-  const router = useRouter()
+  });
+  const router = useRouter();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     const res = await signIn("credentials", {
       redirect: false,
       email: values.email,
       password: values.password,
-    })
+    });
 
     if (res?.ok) {
-      router.push("/dashboard")
+      router.push("/dashboard");
     } else {
       form.setError("email", {
         message: "Email ou mot de passe incorrect",
-      })
+      });
     }
 
-    setIsSubmitting(false)
+    setIsSubmitting(false);
   }
 
   return (
@@ -81,7 +87,11 @@ export function LoginForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="madox@esgi.com" {...field} />
+                    <Input
+                      type="email"
+                      placeholder="madox@esgi.com"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -96,7 +106,11 @@ export function LoginForm() {
                   <FormLabel>Password</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} />
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        {...field}
+                      />
                       <Button
                         type="button"
                         variant="ghost"
@@ -109,7 +123,9 @@ export function LoginForm() {
                         ) : (
                           <Eye className="h-4 w-4 text-gray-500" />
                         )}
-                        <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
+                        <span className="sr-only">
+                          {showPassword ? "Hide password" : "Show password"}
+                        </span>
                       </Button>
                     </div>
                   </FormControl>
@@ -130,11 +146,14 @@ export function LoginForm() {
 
         <div className="text-center text-sm text-gray-500">
           Don't have an account?{" "}
-          <Link href="http://localhost:3000/auth/register" className="font-medium text-teal-600 hover:text-teal-500">
+          <Link
+            href={"/auth/register"}
+            className="font-medium text-teal-600 hover:text-teal-500"
+          >
             Sign up
           </Link>
         </div>
       </div>
     </div>
-  )
+  );
 }

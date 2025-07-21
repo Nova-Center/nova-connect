@@ -1,13 +1,13 @@
-import { getServerSession } from "next-auth"
-import { redirect } from "next/navigation"
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import ServiceMain from "@/components/services/service-main"
-import { authOptions } from "../api/auth/[...nextauth]/route"
-import { MainSidebar } from "@/components/dashboard/main-sidebar"
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import ServiceMain from "@/components/services/service-main";
+import { authOptions } from "@/lib/auth";
+import { MainSidebar } from "@/components/dashboard/main-sidebar";
 
 export default async function ServicesPage() {
-  const session = await getServerSession(authOptions)
-  if (!session) redirect("/auth/login")
+  const session = await getServerSession(authOptions);
+  if (!session) redirect("/auth/login");
 
   return (
     <SidebarProvider>
@@ -21,5 +21,5 @@ export default async function ServicesPage() {
         </SidebarInset>
       </div>
     </SidebarProvider>
-  )
+  );
 }
