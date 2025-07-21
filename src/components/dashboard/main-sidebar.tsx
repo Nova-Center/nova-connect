@@ -4,15 +4,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import axios from "axios";
-import {
-  Home,
-  Bell,
-  Users,
-  Calendar,
-  LogOut,
-  ShoppingBag,
-  Zap,
-} from "lucide-react";
+import { Home, Bell, Users, Calendar, LogOut, ShoppingBag, Zap } from 'lucide-react';
 import { FaApple, FaJava, FaWindows } from "react-icons/fa";
 
 import { Button } from "@/components/ui/button";
@@ -98,6 +90,7 @@ export function MainSidebar() {
 
   const currentLevel = Math.floor((points ?? 0) / 100) + 1;
   const progressToNext = (points ?? 0) % 100;
+  const pointsToNextLevel = 100 - progressToNext;
 
   return (
     <Sidebar className="w-80 border-r border-border/40 bg-gradient-to-b from-background to-muted/20">
