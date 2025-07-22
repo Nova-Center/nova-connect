@@ -288,7 +288,7 @@ export default function ServiceList({
                           className="flex items-center justify-between p-3 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-200/50 dark:border-blue-800/20"
                         >
                           <div className="flex-1 text-sm text-blue-800 dark:text-blue-200">
-                            <span className="font-medium">{proposal.proposer_name || "Utilisateur inconnu"}</span>{" "}
+                            <span className="font-medium">{proposal.proposer_name || "Utilisateur anonyme"}</span>{" "}
                             propose un échange.
                           </div>
                           <div className="flex gap-2 ml-4">
