@@ -226,9 +226,6 @@ export default function NotificationsMain() {
                           {n.excerpt || n.content}
                         </p>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(n.created_at).toLocaleString("fr-FR")}
-                          </span>
                           {getNotificationIcon(n.type)}
                         </div>
                       </div>
