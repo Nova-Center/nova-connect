@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 
 export default function CommentDialog({ postId, open, onClose }: Props) {
   const { data: session } = useSession()
@@ -72,14 +73,12 @@ export default function CommentDialog({ postId, open, onClose }: Props) {
           {comments.map((comment) => (
             <div key={comment.id} className="flex items-start justify-between gap-3">
               <div className="flex gap-3">
-                <img
-                  src={
-                    comment.user?.avatar ??
-                    `/placeholder-post.svg?height=32&width=32&text=${comment.user?.username?.[0] ?? "U"}`
-                  }
-                  alt="Avatar"
-                  className="w-8 h-8 rounded-full object-cover"
-                />
+                <Avatar className="w-8 h-8">
+                  <AvatarImage src={comment.user?.avatar || "/placeholder.svg"} />
+                  <AvatarFallback className="text-xs font-bold text-white bg-gradient-to-br from-blue-500 to-purple-600 border border-white/20">
+                    {comment.user?.username?.[0]?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
                 <div>
                   <div className="font-medium text-sm text-foreground">
                     {comment.user.username}
