@@ -244,7 +244,9 @@ export function MainSidebar() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={() =>
+                signOut({ callbackUrl: process.env.NEXT_PUBLIC_APP_URL })
+              }
               className="h-9 w-9 rounded-lg hover:bg-destructive/10 hover:text-destructive transition-colors"
             >
               <LogOut className="h-4 w-4" />
