@@ -111,10 +111,10 @@ export function MainSidebar() {
           <div className="relative">
             <Avatar className="h-14 w-14 ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
               <AvatarImage
-                src={user?.avatar || "/placeholder.svg?height=56&width=56"}
+                src={user?.avatar ||user?.email?.[0]?.toUpperCase()}
               />
-              <AvatarFallback className="text-lg font-semibold bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
-                {user?.email?.[0]?.toUpperCase() || "ME"}
+              <AvatarFallback className="text-lg font-bold text-white bg-gradient-to-br from-blue-500 to-purple-600 border-2 border-white/20">
+                {user?.email?.[0]?.toUpperCase() || "U"}
               </AvatarFallback>
             </Avatar>
             <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-green-500 rounded-full border-2 border-background flex items-center justify-center">
