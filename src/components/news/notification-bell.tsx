@@ -142,9 +142,6 @@ export function NotificationBell() {
             <span className="text-xs text-gray-500">
               {n.excerpt || ""}
             </span>
-            <span className="text-xs text-gray-400">
-              {new Date(n.created_at).toLocaleString("fr-FR")}
-            </span>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
