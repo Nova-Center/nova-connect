@@ -188,7 +188,7 @@ export default function ChatInterface() {
             <MessageCircle className="h-5 w-5" />
             <CardTitle className="text-lg">Chat Nova Connect</CardTitle>
           </div>
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             {unreadCount > 0 && (
               <Badge
                 variant="secondary"
@@ -200,7 +200,7 @@ export default function ChatInterface() {
               </Badge>
             )}
             <Users className="h-4 w-4" />
-          </div>
+          </div> */}
         </div>
       </CardHeader>
 

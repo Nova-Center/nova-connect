@@ -33,9 +33,9 @@ export default function ChatPage() {
       {/* Titre de la conversation */}
       <div className="mb-4 flex-shrink-0">
         <h1 className="text-2xl font-bold text-foreground mb-1">
-          Conversation avec{" "}
+          Conversation en{" "}
           <span className="bg-gradient-to-r from-violet-600 to-blue-600 bg-clip-text text-transparent">
-            {otherUserId}
+            direct
           </span>
         </h1>
         <p className="text-sm text-muted-foreground">Discutez en temps réel avec votre contact</p>
