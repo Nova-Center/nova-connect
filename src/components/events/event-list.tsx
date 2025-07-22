@@ -195,9 +195,6 @@ export default function ModernEventList() {
                         </div>
                       </div>
                       <div className="flex justify-between items-center pt-2">
-                        <Badge className="rounded-full px-3 py-1 text-xs bg-muted text-muted-foreground border border-border">
-                          Ajouté le {new Date(event.created_at).toLocaleDateString("fr-FR")}
-                        </Badge>
                         {!isEventCreator(event) && (
                           <Button
                             size="sm"
