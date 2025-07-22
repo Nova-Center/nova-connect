@@ -74,7 +74,7 @@ export default function CommentDialog({ postId, open, onClose }: Props) {
             <div key={comment.id} className="flex items-start justify-between gap-3">
               <div className="flex gap-3">
                 <Avatar className="w-8 h-8">
-                  <AvatarImage src={comment.user?.avatar || "/placeholder.svg"} />
+                  <AvatarImage src={comment.user?.avatar || comment.user?.username?.[0]?.toUpperCase() } />
                   <AvatarFallback className="text-xs font-bold text-white bg-gradient-to-br from-blue-500 to-purple-600 border border-white/20">
                     {comment.user?.username?.[0]?.toUpperCase() || "U"}
                   </AvatarFallback>
