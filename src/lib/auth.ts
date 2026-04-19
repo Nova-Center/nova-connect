@@ -3,6 +3,7 @@ import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 export const authOptions: AuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -14,7 +15,7 @@ export const authOptions: AuthOptions = {
         try {
           const loginResponse = await axios.post(
             `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/login`,
-            credentials
+            credentials,
           );
           const token = loginResponse.data.token;
 
@@ -29,7 +30,7 @@ export const authOptions: AuthOptions = {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
-            }
+            },
           );
 
           const user = userResponse.data;
